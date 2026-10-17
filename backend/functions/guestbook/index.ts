@@ -65,11 +65,15 @@ serve(async (req) => {
     return new Response('ok', { status: 200, headers: corsHeaders() });
   }
 
-  if (path === '/api/guestbook') {
+  const isGuestbookPath = path === '/guestbook' || path === '/api/guestbook' || path === '/' || path.endsWith('/guestbook');
+  if (isGuestbookPath) {
     // ── GET: List entries ──
     if (method === 'GET') {
       const limitParam = url.searchParams.get('limit');
-      const limit = limitParam ? Math.min(Number(limitParam), MAX_ENTRIES) : MAX_ENTRIES;
+      const parsedLimit = limitParam ? Number(limitParam) : NaN;
+      const limit = Number.isInteger(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, MAX_ENTRIES)
+        : MAX_ENTRIES;
 
       const { data, error } = await supabase
         .from('guestbook_entries')

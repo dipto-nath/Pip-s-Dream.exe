@@ -1,14 +1,14 @@
-// =============================================================
-// PIP.EXE — Supabase Database Migration
-//
-// This file is applied via the Supabase CLI:
-//   supabase db push     (or supabase db reset for a fresh start)
-//
-// Tables:
-//   - guestbook_entries  : persistent visitor messages (read-only to anon)
-//   - visits             : idempotent visit records keyed by hashed session ID
-//   - visitor_count      : maintained by AFTER INSERT trigger for fast reads
-// =============================================================
+-- =============================================================
+-- PIP.EXE — Supabase Database Migration
+--
+-- This file is applied via the Supabase CLI:
+--   supabase db push     (or supabase db reset for a fresh start)
+--
+-- Tables:
+--   - guestbook_entries  : persistent visitor messages (read-only to anon)
+--   - visits             : idempotent visit records keyed by hashed session ID
+--   - visitor_count      : maintained by AFTER INSERT trigger for fast reads
+-- =============================================================
 
 -- ── Guestbook entries ──
 CREATE TABLE IF NOT EXISTS guestbook_entries (
@@ -83,7 +83,7 @@ CREATE POLICY "Public can read published guestbook entries"
 CREATE POLICY "Deny anon insert on guestbook"
     ON guestbook_entries
     FOR INSERT
-    USING (false);
+    WITH CHECK (false);
 
 CREATE POLICY "Deny anon update on guestbook"
     ON guestbook_entries
@@ -114,7 +114,6 @@ CREATE POLICY "Public can read visitor count"
 CREATE POLICY "Deny anon insert on visitor_count"
     ON visitor_count
     FOR INSERT
-    USING (false)
     WITH CHECK (false);
 
 CREATE POLICY "Deny anon update on visitor_count"

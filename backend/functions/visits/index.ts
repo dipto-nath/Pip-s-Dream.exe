@@ -75,7 +75,7 @@ serve(async (req) => {
 
     // Even if insert fails due to unique constraint (already visited),
     // we still return success — the visit is recorded idempotently.
-    if (insertError && !insertError.message.includes('duplicate')) {
+    if (insertError && insertError.code !== '23505') {
       // Genuine error
       return new Response(
         JSON.stringify({ success: false, error: 'Could not record your visit right now.' }),

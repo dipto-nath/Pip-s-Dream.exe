@@ -33,6 +33,12 @@ let backendOnline: boolean | null = null;
 let lastOnlineCheck = 0;
 const ONLINE_CACHE_MS = 30000;
 
+/** Reset the backend-cache (for testing only). */
+export function _resetBackendCache() {
+  backendOnline = null;
+  lastOnlineCheck = 0;
+}
+
 export async function checkBackendHealth(): Promise<boolean> {
   const now = Date.now();
   if (backendOnline !== null && now - lastOnlineCheck < ONLINE_CACHE_MS) {

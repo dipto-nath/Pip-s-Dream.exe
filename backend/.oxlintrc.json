@@ -1,6 +1,6 @@
-# =============================================================
-# PIP.EXE — Oxlint Configuration (Backend)
-# =============================================================
+// =============================================================
+// PIP.EXE — Oxlint Configuration (Backend)
+// =============================================================
 
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
@@ -13,8 +13,7 @@
     {
       "files": ["functions/**/*.ts"],
       "rules": {
-        "no-undef": "off",
-        "no-undef-init": "off"
+        "no-undef": "off"
       }
     }
   ]
