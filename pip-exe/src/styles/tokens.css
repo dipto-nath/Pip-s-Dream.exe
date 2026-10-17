@@ -1,0 +1,105 @@
+/* =============================================================
+   PIP.EXE — DESIGN TOKENS
+   The Midnight Nursery Dream Desk
+   ============================================================= */
+
+:root {
+  /* ── Brand Colors ── */
+  --dream-cream:        #fff8f1;
+  --deep-wood:          #5c4033;
+  --vintage-berry:      #a34063;
+  --glow-amber:         #f59e0b;
+  --glow-amber-bright:  #fbbf24;
+  --midnight-nursery:   #1a1014;
+
+  /* ── Day-mode Semantic Tokens ── */
+  --surface:            #fff8f1;
+  --surface-muted:      #fdf0e4;
+  --surface-panel:      #fcecd9;
+  --surface-inset:      #f5e0c7;
+  --body-text:          #3a2418;
+  --text-muted:         #7a5845;
+  --text-faint:         #a08070;
+  --border-warm:        #d4a882;
+  --border-strong:      #a07050;
+  --accent:             #a34063;
+  --accent-hover:       #8b3254;
+  --accent-light:       #f0c8d8;
+  --amber:              #f59e0b;
+  --amber-bright:       #fbbf24;
+  --amber-glow:         rgba(245, 158, 11, 0.25);
+  --shadow-warm:        rgba(92, 64, 51, 0.18);
+  --shadow-deep:        rgba(58, 36, 24, 0.28);
+  --focus-ring:         #a34063;
+  --guestbook-paper:    #fffbf5;
+  --star-color:         #f59e0b;
+
+  /* ── Typography ── */
+  --font-display:       'Fraunces', Georgia, serif;
+  --font-ui:            'Fredoka', 'Nunito', system-ui, sans-serif;
+  --font-story:         'Lora', Georgia, serif;
+
+  /* ── Spacing Scale ── */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-20: 5rem;
+  --sp-24: 6rem;
+
+  /* ── Radii ── */
+  --radius-sm:    4px;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+  --radius-xl:    20px;
+  --radius-pill:  9999px;
+
+  /* ── Transitions ── */
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-soft:    cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:     150ms;
+  --dur-base:     250ms;
+  --dur-slow:     400ms;
+
+  /* ── Lantern Glow (dynamic) ── */
+  --lantern-intensity: 0.5;
+  --lantern-glow-color: rgba(245, 158, 11, var(--lantern-intensity));
+
+  /* ── Z-index layers ── */
+  --z-base:     1;
+  --z-raised:   10;
+  --z-overlay:  100;
+  --z-modal:    200;
+  --z-toast:    300;
+  --z-cursor:   9999;
+}
+
+/* ── Dream Mode (dark) ── */
+[data-theme="dream"] {
+  --surface:          #1a1014;
+  --surface-muted:    #221519;
+  --surface-panel:    #2a1b20;
+  --surface-inset:    #321e25;
+  --body-text:        #f5e8d8;
+  --text-muted:       #c4a882;
+  --text-faint:       #886a58;
+  --border-warm:      #5c3a2a;
+  --border-strong:    #7a4a38;
+  --accent:           #cf6e96;
+  --accent-hover:     #e085b0;
+  --accent-light:     #3a1a28;
+  --amber:            #f59e0b;
+  --amber-bright:     #fbbf24;
+  --amber-glow:       rgba(245, 158, 11, 0.35);
+  --shadow-warm:      rgba(0, 0, 0, 0.4);
+  --shadow-deep:      rgba(0, 0, 0, 0.6);
+  --focus-ring:       #cf6e96;
+  --guestbook-paper:  #22171c;
+  --star-color:       #fbbf24;
+}

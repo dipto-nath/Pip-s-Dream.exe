@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PIP.EXE — The Midnight Nursery Dream Desk</title>
+    <meta name="description" content="Pip, the Junior Dream Engineer at the Midnight Nursery, invites you into their cozy digital world. Explore lullabies, dream lanterns, and the night-delivery routes of a tiny skull-baby inventor." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Fredoka:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <script>
+      // Apply saved theme before first paint to avoid flash
+      try {
+        const saved = localStorage.getItem('pip-theme');
+        if (saved === 'dream') {
+          document.documentElement.setAttribute('data-theme', 'dream');
+        }
+      } catch (_) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Dependencies & Build artifacts
+node_modules/
+dist/
+dist-ssr/
+build/
+.cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment & Editor
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
