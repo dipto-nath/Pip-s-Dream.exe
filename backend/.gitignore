@@ -1,0 +1,20 @@
+# IDE
+.vscode/
+.idea/
+
+# Build output
+node_modules/
+dist/
+
+# Local dev data (JSON file storage)
+data/*.json
+!data/.gitkeep
+
+# Environment
+.env
+
+# Logs
+*.log
+
+# Supabase
+.supabase/

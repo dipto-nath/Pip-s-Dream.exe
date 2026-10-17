@@ -1,0 +1,21 @@
+{
+  "name": "pip-dream-backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "dev:once": "tsx src/server.ts",
+    "build": "tsc",
+    "lint": "oxlint",
+    "test": "vitest watch",
+    "test:run": "vitest run"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsx": "^4.20.0",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.5"
+  }
+}

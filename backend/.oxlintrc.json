@@ -1,0 +1,21 @@
+# =============================================================
+# PIP.EXE — Oxlint Configuration (Backend)
+# =============================================================
+
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "oxc", "node"],
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "off"
+  },
+  "overrides": [
+    {
+      "files": ["functions/**/*.ts"],
+      "rules": {
+        "no-undef": "off",
+        "no-undef-init": "off"
+      }
+    }
+  ]
+}

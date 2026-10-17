@@ -1,0 +1,25 @@
+# =============================================================
+# Supabase CLI Configuration
+# =============================================================
+
+[supabase]
+# Use Docker for local development
+# Project reference is set when you link: supabase link --project-ref <ref>
+
+[api]
+# Port for local API (Edge Functions)
+port = 54321
+# Always serve from the root path (functions are served at /functions/v1/*)
+# The Vite dev server proxies /api/* to these functions
+schema = "public"
+# REST API is exposed on the same port as the functions
+enable_media_type_handlers = false
+
+[db]
+port = 54322
+shadow_database_url = ""
+major_version = 15
+
+[edge_functions]
+# Directory where Edge Functions live
+# Each function subfolder becomes: /functions/v1/<folder-name>
