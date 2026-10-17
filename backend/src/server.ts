@@ -100,8 +100,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+import { fileURLToPath } from 'node:url';
+
 // Only start if run directly (not imported)
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isDirectRun = process.argv[1] && (
+  fileURLToPath(import.meta.url) === process.argv[1] ||
+  process.argv[1].endsWith('server.ts')
+);
+
+if (isDirectRun) {
   server.listen(PORT, () => {
     console.log(`[pip-dream-backend] Listening on http://localhost:${PORT}`);
   });
