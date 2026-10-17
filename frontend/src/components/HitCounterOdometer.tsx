@@ -1,10 +1,11 @@
 // =============================================================
 // PIP.EXE — HitCounterOdometer
-// Vintage rolling digit display with browser-local counter
+// Vintage rolling digit display with global counter (backend)
+// + local fallback when the server is unreachable.
 // =============================================================
 
-import { useState } from 'react';
-import { recordVisit, formatCount } from '../lib/visitCounter';
+import { useState, useEffect } from 'react';
+import { recordVisit, getSessionId, formatCount } from '../lib/visitService';
 
 interface DigitProps {
   char: string;
@@ -36,11 +37,31 @@ function Digit({ char }: DigitProps) {
 }
 
 export function HitCounterOdometer() {
-  // recordVisit is session-guarded, so calling it in the lazy initializer
-  // is safe and avoids setState-in-effect lint warnings.
-  const [count] = useState<number>(() => recordVisit());
+  const [count, setCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function init() {
+      const sessionId = getSessionId();
+      const result = await recordVisit(sessionId);
+      if (mounted) {
+        setCount(result.total);
+        setIsOnline(result.isOnline);
+        setLoading(false);
+      }
+    }
+    init();
+    return () => { mounted = false; };
+  }, []);
 
   const formatted = formatCount(count, 7);
+  const label = isOnline
+    ? 'Global Dream Visits'
+    : isOnline === false
+      ? 'Dream Visits — Local Only'
+      : 'Counting Dreams…';
 
   return (
     <div
@@ -57,20 +78,42 @@ export function HitCounterOdometer() {
           fontSize: '0.6rem',
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
-          color: 'var(--text-faint)',
+          color: isOnline ? 'var(--accent)' : 'var(--text-faint)',
           fontFamily: 'var(--font-ui)',
         }}
       >
-        Dream Visits · This Device
+        {label}
       </div>
-      <div
-        aria-label={`${count.toLocaleString()} dream visits on this device`}
-        style={{ display: 'flex', gap: 2, letterSpacing: 0 }}
-      >
-        {formatted.split('').map((char, i) => (
-          <Digit key={i} char={char === ',' ? ',' : char} />
-        ))}
-      </div>
+      {loading ? (
+        <div
+          aria-label="Loading visitor count"
+          style={{ display: 'flex', gap: 2, letterSpacing: 0 }}
+        >
+          {'───────'.split('').map((char, i) => (
+            <Digit key={i} char={char} />
+          ))}
+        </div>
+      ) : (
+        <div
+          aria-label={`${count.toLocaleString()} dream visits`}
+          style={{ display: 'flex', gap: 2, letterSpacing: 0 }}
+        >
+          {formatted.split('').map((char, i) => (
+            <Digit key={i} char={char === ',' ? ',' : char} />
+          ))}
+        </div>
+      )}
+      {!isOnline && !loading && (
+        <small
+          style={{
+            color: 'var(--text-faint)',
+            fontSize: '0.58rem',
+            fontStyle: 'italic',
+          }}
+        >
+          Server unreachable — showing local session count only
+        </small>
+      )}
     </div>
   );
 }

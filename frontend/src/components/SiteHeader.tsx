@@ -6,6 +6,7 @@
 import { Volume2, VolumeX, Sun, Moon, Zap, ZapOff } from 'lucide-react';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
+import { getAudioEngine } from '../lib/audioEngine';
 import type { Theme } from '../lib/types';
 
 interface SiteHeaderProps {
@@ -27,7 +28,9 @@ export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle }: S
     toggleSound();
     if (!soundEnabled) {
       // Will enable — play a quick chime after toggle
-      setTimeout(() => playChime(880), 100);
+      setTimeout(() => {
+        getAudioEngine().playChime(880);
+      }, 100);
     }
   }
 

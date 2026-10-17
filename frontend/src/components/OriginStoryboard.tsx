@@ -3,7 +3,7 @@
 // Interactive vertically-unfolding story with scene progress
 // =============================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { STORY_SCENES } from '../lib/dreamContent';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
@@ -56,39 +56,37 @@ export function OriginStoryboard() {
           style={{
             display: 'grid',
             gridTemplateColumns: '80px 1fr',
-            gap: '0 var(--sp-8)',
+            gap: 'clamp(3rem, 6vw, 6rem) var(--sp-8)',
+            position: 'relative',
           }}
           className="story-grid"
         >
-          {/* Progress column */}
+          {/* Progress rail line extending through the full story */}
           <div
             aria-hidden="true"
             style={{
-              position: 'relative',
-              paddingTop: 'var(--sp-3)',
+              gridColumn: 1,
+              gridRow: `1 / ${STORY_SCENES.length + 1}`,
+              width: 2,
+              justifySelf: 'center',
+              background: `linear-gradient(to bottom, var(--accent), var(--amber))`,
+              opacity: 0.3,
             }}
-          >
-            {/* Vertical line */}
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: 0,
-                bottom: 0,
-                width: 2,
-                background: `linear-gradient(to bottom, var(--accent), var(--amber))`,
-                transform: 'translateX(-50%)',
-                opacity: 0.3,
-              }}
-            />
-            {STORY_SCENES.map((scene, i) => (
+          />
+
+          {STORY_SCENES.map((scene, i) => (
+            <Fragment key={scene.id}>
+              {/* Progress marker in column 1 */}
               <div
-                key={scene.id}
+                aria-hidden="true"
                 style={{
+                  gridColumn: 1,
+                  gridRow: i + 1,
                   display: 'flex',
                   justifyContent: 'center',
-                  marginBottom: 'clamp(3rem, 6vw, 6rem)',
+                  paddingTop: 'var(--sp-6)',
                   position: 'relative',
+                  zIndex: 1,
                 }}
               >
                 <div
@@ -110,27 +108,23 @@ export function OriginStoryboard() {
                     boxShadow: i === activeScene
                       ? '0 0 12px rgba(163,64,99,0.4)'
                       : 'none',
-                    zIndex: 1,
                     position: 'relative',
                   }}
                 >
                   {scene.icon}
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Scenes column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(3rem, 6vw, 6rem)' }}>
-            {STORY_SCENES.map((scene, i) => (
+              {/* Scene card in column 2 */}
               <motion.div
-                key={scene.id}
                 ref={(el) => { sceneRefs.current[i] = el; }}
                 initial={prefersReduced ? false : { opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.5, delay: 0.05 }}
                 style={{
+                  gridColumn: 2,
+                  gridRow: i + 1,
                   background: i === activeScene
                     ? 'var(--surface-panel)'
                     : 'var(--surface)',
@@ -180,14 +174,14 @@ export function OriginStoryboard() {
                   {scene.body}
                 </p>
               </motion.div>
-            ))}
-          </div>
+            </Fragment>
+          ))}
         </div>
       </div>
 
       <style>{`
         @media (max-width: 480px) {
-          .story-grid { grid-template-columns: 44px 1fr !important; gap: 0 1rem !important; }
+          .story-grid { grid-template-columns: 44px 1fr !important; gap: clamp(2rem, 5vw, 4rem) 1rem !important; }
         }
       `}</style>
     </section>

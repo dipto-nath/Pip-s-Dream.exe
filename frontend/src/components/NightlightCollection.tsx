@@ -28,6 +28,23 @@ export function NightlightCollection() {
     playChime(660);
   }
 
+  function handlePresetKeyDown(e: React.KeyboardEvent, index: number) {
+    let nextIndex = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      nextIndex = (index + 1) % NIGHTLIGHT_PRESETS.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      nextIndex = (index - 1 + NIGHTLIGHT_PRESETS.length) % NIGHTLIGHT_PRESETS.length;
+    }
+    if (nextIndex >= 0) {
+      e.preventDefault();
+      const nextPreset = NIGHTLIGHT_PRESETS[nextIndex];
+      selectPreset(nextPreset.id);
+      const container = e.currentTarget.parentElement;
+      const radios = container?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      radios?.[nextIndex]?.focus();
+    }
+  }
+
   function toggleOn() {
     setOn((prev) => !prev);
     playChime(on ? 440 : 880);
@@ -144,12 +161,14 @@ export function NightlightCollection() {
               flexWrap: 'wrap',
             }}
           >
-            {NIGHTLIGHT_PRESETS.map((p) => (
+            {NIGHTLIGHT_PRESETS.map((p, idx) => (
               <button
                 key={p.id}
                 role="radio"
                 aria-checked={activePreset === p.id}
+                tabIndex={activePreset === p.id ? 0 : -1}
                 onClick={() => selectPreset(p.id)}
+                onKeyDown={(e) => handlePresetKeyDown(e, idx)}
                 style={{
                   background: activePreset === p.id ? 'var(--surface-inset)' : 'var(--surface)',
                   border: activePreset === p.id

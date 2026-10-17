@@ -3,11 +3,12 @@
 // =============================================================
 
 import type { GuestbookEntry } from './types';
+export type { GuestbookEntry };
 
 const STORAGE_KEY = 'pip-exe-guestbook';
 const MAX_ENTRIES = 50;
 const MAX_NAME_LENGTH = 24;
-const MAX_MESSAGE_LENGTH = 120;
+const MAX_MESSAGE_LENGTH = 180;
 
 function isValidEntry(obj: unknown): obj is GuestbookEntry {
   if (typeof obj !== 'object' || obj === null) return false;
@@ -35,7 +36,18 @@ export function loadEntries(): GuestbookEntry[] {
 
 export function saveEntries(entries: GuestbookEntry[]): boolean {
   try {
-    const bounded = entries.slice(0, MAX_ENTRIES);
+    const current = loadEntries();
+    const map = new Map<string, GuestbookEntry>();
+    for (const e of entries) {
+      map.set(e.id, e);
+    }
+    for (const e of current) {
+      if (!map.has(e.id)) {
+        map.set(e.id, e);
+      }
+    }
+    const merged = Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
+    const bounded = merged.slice(0, MAX_ENTRIES);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bounded));
     return true;
   } catch {
@@ -70,9 +82,10 @@ export function addEntry(
   const entry = createEntry(name, message);
   if (!entry) return { entries: existing, success: false };
 
-  const next = [entry, ...existing].slice(0, MAX_ENTRIES);
+  const latest = loadEntries();
+  const next = [entry, ...latest].slice(0, MAX_ENTRIES);
   const saved = saveEntries(next);
-  return { entries: next, success: saved };
+  return { entries: saved ? loadEntries() : next, success: saved };
 }
 
 export const GUESTBOOK_LIMITS = {

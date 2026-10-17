@@ -1,13 +1,14 @@
 // =============================================================
 // PIP.EXE — DreamGuestbook
-// Retro guestbook wall with local persistence
+// Retro guestbook wall with backend persistence + local fallback
 // =============================================================
 
-import { useState, useRef, useId } from 'react';
+import { useState, useRef, useId, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PenLine, Send } from 'lucide-react';
-import { loadEntries, addEntry, GUESTBOOK_LIMITS } from '../lib/guestbookStorage';
-import type { GuestbookEntry } from '../lib/types';
+import { fetchGuestbookEntries, submitGuestbookEntry, GUESTBOOK_LIMITS } from '../lib/guestbookService';
+import type { GuestbookEntry } from '../lib/guestbookService';
+import { loadEntries } from '../lib/guestbookStorage';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
@@ -26,12 +27,32 @@ export function DreamGuestbook() {
   const statusRef = useRef<HTMLDivElement>(null);
   const formId = useId();
 
-  const [entries, setEntries] = useState<GuestbookEntry[]>(() => loadEntries());
+  const [entries, setEntries] = useState<GuestbookEntry[]>(() => {
+    // Hydrate from localStorage immediately for offline-first UX
+    try { return loadEntries(); }
+    catch { return []; }
+  });
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [nameError, setNameError] = useState('');
   const [msgError, setMsgError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [entriesLoading, setEntriesLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const [submitError, setSubmitError] = useState('');
+
+  // Fetch entries from the backend on mount
+  useEffect(() => {
+    let mounted = true;
+    fetchGuestbookEntries().then((result) => {
+      if (!mounted) return;
+      setEntries(result.entries);
+      setBackendOnline(result.isOnline);
+      setEntriesLoading(false);
+    });
+    return () => { mounted = false; };
+  }, []);
 
   function validate(): boolean {
     let valid = true;
@@ -61,23 +82,52 @@ export function DreamGuestbook() {
     return valid;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
 
-    const { entries: next, success } = addEntry(entries, name, message);
-    if (success || next.length > entries.length) {
-      setEntries(next);
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    const result = await submitGuestbookEntry(name, message);
+
+    if (result.success && result.entry) {
+      // Prepend the new entry optimistically
+      setEntries((prev) => [result.entry!, ...prev]);
       setName('');
       setMessage('');
       setNameError('');
       setMsgError('');
-      setSuccessMsg('Your dream message has been pinned to the wall! ⭐');
+
+      if (result.isLocalFallback) {
+        setBackendOnline(false);
+        setSuccessMsg('Your message is saved locally (offline mode) ⚠️');
+      } else {
+        setBackendOnline(true);
+        setSuccessMsg('Your dream message has been pinned to the nursery wall! ⭐');
+      }
+
       playChime(1046);
       setTimeout(() => setSuccessMsg(''), 4000);
-    } else {
-      setSuccessMsg('Could not save your message right now. Please try again.');
+    } else if (result.error) {
+      if (result.error.type === 'validation') {
+        // Map backend validation errors to inline field errors
+        if (result.error.message.toLowerCase().includes('name')) {
+          setNameError(result.error.message);
+        } else if (result.error.message.toLowerCase().includes('mess')) {
+          setMsgError(result.error.message);
+        } else {
+          setSubmitError(result.error.message);
+        }
+      } else if (result.error.type === 'rate_limit') {
+        setSubmitError(result.error.message);
+      } else {
+        setSubmitError(result.error.message);
+        setBackendOnline(false);
+      }
     }
+
+    setIsSubmitting(false);
   }
 
   return (
@@ -106,9 +156,15 @@ export function DreamGuestbook() {
           >
             Leave a dream message for Pip. It will be pinned to the nursery noticeboard
             until you visit again.{' '}
-            <em style={{ color: 'var(--text-faint)', fontSize: '0.85rem' }}>
-              Messages are saved in your browser only — not shared with other visitors.
-            </em>
+            {backendOnline === true ? (
+              <em style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
+                ✦ Connected to the nursery server — messages are shared with other visitors.
+              </em>
+            ) : backendOnline === false ? (
+              <em style={{ color: 'var(--vintage-berry)', fontSize: '0.85rem' }}>
+                ⚠ Offline mode — messages are saved in your browser only, not synced with the server.
+              </em>
+            ) : null}
           </p>
         </div>
 
@@ -273,9 +329,9 @@ export function DreamGuestbook() {
                   )}
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ width: '100%' }}>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={isSubmitting}>
                   <Send size={14} />
-                  Pin to the Board
+                  {isSubmitting ? 'Pinning…' : 'Pin to the Board'}
                 </button>
               </form>
 
@@ -296,12 +352,37 @@ export function DreamGuestbook() {
               >
                 {successMsg}
               </div>
+              {submitError && (
+                <div
+                  role="alert"
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.82rem',
+                    color: 'var(--vintage-berry)',
+                    marginTop: 'var(--sp-2)',
+                  }}
+                >
+                  {submitError}
+                </div>
+              )}
             </div>
           </div>
 
           {/* ── Message wall ── */}
           <div>
-            {entries.length === 0 ? (
+            {entriesLoading ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: 'var(--sp-12) var(--sp-8)',
+                  fontFamily: 'var(--font-story)',
+                  fontSize: '1rem',
+                  color: 'var(--text-faint)',
+                }}
+              >
+                Fetching dream messages from the nursery…
+              </div>
+            ) : entries.length === 0 ? (
               <div
                 style={{
                   textAlign: 'center',

@@ -83,15 +83,14 @@ export function EasterEggTrigger({ onEggFound }: EasterEggProps) {
       <AnimatePresence>
         {shown && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%' }}
+            animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+            exit={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
             transition={{ type: 'spring', stiffness: 260, damping: 22 }}
             style={{
               position: 'fixed',
               top: '50%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
               zIndex: 300,
               maxWidth: '420px',
               width: 'calc(100% - 2rem)',

@@ -96,6 +96,32 @@ button {
   border: 0;
 }
 
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 9999;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:not(:focus):not(:focus-visible) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Layout Containers ── */
 .container {
   width: 100%;
@@ -178,6 +204,14 @@ button {
 .btn-primary:active {
   transform: translateY(1px);
   box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+}
+
+[data-theme="dream"] .btn-primary {
+  color: #1a1014;
+}
+
+[data-theme="dream"] .btn-primary:hover {
+  color: #1a1014;
 }
 
 /* ── Secondary Button ── */

@@ -47,28 +47,13 @@ export default function App() {
       {/* Global cursor trail (decorative) */}
       <SparkleTrailCanvas />
 
-      {/* Draggable console (chaos mode only) — remount when chaos toggles to reset closed state */}
-      <DraggableDreamWindow key={chaosMode ? 'chaos-on' : 'chaos-off'} chaosMode={chaosMode} />
-
       {/* Skip link */}
-      <a
-        href="#hero"
-        className="sr-only"
-        style={{
-          position: 'absolute',
-          top: 4,
-          left: 4,
-          zIndex: 9999,
-          background: 'var(--accent)',
-          color: '#fff',
-          padding: '8px 16px',
-          borderRadius: 4,
-          fontFamily: 'var(--font-ui)',
-        }}
-        onFocus={(e) => { (e.currentTarget as HTMLAnchorElement).style.position = 'absolute'; }}
-      >
+      <a href="#hero" className="skip-link">
         Skip to content
       </a>
+
+      {/* Draggable console (chaos mode only) — remount when chaos toggles to reset closed state */}
+      <DraggableDreamWindow key={chaosMode ? 'chaos-on' : 'chaos-off'} chaosMode={chaosMode} />
 
       {/* Main layout */}
       <div

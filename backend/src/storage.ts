@@ -15,7 +15,7 @@ export interface GuestbookStorage {
   /** Insert a new entry. Returns the created entry with server-generated fields. */
   createEntry(nickname: string, message: string): Promise<GuestbookEntry>;
   /** Check if a recent entry from the same source exists (for rate limiting). */
-  recentEntryCount(windowMs: number): Promise<number>;
+  recentEntryCount(source: string, windowMs: number): Promise<number>;
 }
 
 /**

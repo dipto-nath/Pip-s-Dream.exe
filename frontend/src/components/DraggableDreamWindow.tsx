@@ -39,9 +39,10 @@ export function DraggableDreamWindow({ chaosMode }: DraggableDreamWindowProps) {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging || !winRef.current) return;
     const el = winRef.current;
-    const parentRect = (el.parentElement ?? document.body).getBoundingClientRect();
-    const newX = clamp(e.clientX - offsetRef.current.x - parentRect.left, 0, parentRect.width - el.offsetWidth);
-    const newY = clamp(e.clientY - offsetRef.current.y - parentRect.top, 0, parentRect.height - el.offsetHeight);
+    const maxX = Math.max(0, window.innerWidth - el.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - el.offsetHeight);
+    const newX = clamp(e.clientX - offsetRef.current.x, 0, maxX);
+    const newY = clamp(e.clientY - offsetRef.current.y, 0, maxY);
     setPos({ x: newX, y: newY });
   }, [isDragging, clamp]);
 
@@ -50,11 +51,16 @@ export function DraggableDreamWindow({ chaosMode }: DraggableDreamWindowProps) {
   // Keyboard repositioning
   function handleKeydown(e: React.KeyboardEvent) {
     const step = e.shiftKey ? 20 : 8;
+    const el = winRef.current;
+    const width = el?.offsetWidth ?? 240;
+    const height = el?.offsetHeight ?? 0;
+    const maxX = Math.max(0, window.innerWidth - width);
+    const maxY = Math.max(0, window.innerHeight - height);
     switch (e.key) {
       case 'ArrowLeft':  setPos((p) => ({ ...p, x: Math.max(0, p.x - step) })); break;
-      case 'ArrowRight': setPos((p) => ({ ...p, x: p.x + step })); break;
+      case 'ArrowRight': setPos((p) => ({ ...p, x: Math.min(maxX, p.x + step) })); break;
       case 'ArrowUp':    setPos((p) => ({ ...p, y: Math.max(0, p.y - step) })); break;
-      case 'ArrowDown':  setPos((p) => ({ ...p, y: p.y + step })); break;
+      case 'ArrowDown':  setPos((p) => ({ ...p, y: Math.min(maxY, p.y + step) })); break;
       default: return;
     }
     e.preventDefault();

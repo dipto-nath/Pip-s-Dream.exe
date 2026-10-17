@@ -31,6 +31,8 @@ export function hashSessionId(sessionId: string): string {
     .digest('hex');
 }
 
+const fileQueues = new Map<string, Promise<void>>();
+
 export class JsonStorage implements GuestbookStorage, VisitStorage {
   private dataPath: string;
   private dataDir: string;
@@ -38,6 +40,24 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
   constructor(dataDir: string = DEFAULT_DATA_DIR) {
     this.dataDir = dataDir;
     this.dataPath = join(dataDir, 'data.json');
+  }
+
+  private async withFileLock<T>(action: () => Promise<T>): Promise<T> {
+    const prev = fileQueues.get(this.dataPath) ?? Promise.resolve();
+    let release!: () => void;
+    const current = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    fileQueues.set(this.dataPath, current);
+    try {
+      await prev;
+      return await action();
+    } finally {
+      release();
+      if (fileQueues.get(this.dataPath) === current) {
+        fileQueues.delete(this.dataPath);
+      }
+    }
   }
 
   private async readData(): Promise<JsonDataFile> {
@@ -48,9 +68,11 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
         guestbook_entries: parsed.guestbook_entries ?? [],
         visits: parsed.visits ?? [],
       };
-    } catch {
-      // File doesn't exist or is invalid — start fresh
-      return { guestbook_entries: [], visits: [] };
+    } catch (err: unknown) {
+      if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
+        return { guestbook_entries: [], visits: [] };
+      }
+      throw err;
     }
   }
 
@@ -61,6 +83,7 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
     } catch (err) {
       // If we can't write, the system is degraded
       console.error('[JsonStorage] Failed to write data:', err);
+      throw err;
     }
   }
 
@@ -75,29 +98,28 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
   }
 
   async createEntry(nickname: string, message: string): Promise<GuestbookEntry> {
-    const data = await this.readData();
-    const now = new Date();
-    const entry: GuestbookEntry = {
-      id: generateId(),
-      nickname,
-      message,
-      created_at: now.toISOString(),
-      status: 'published',
-    };
-    // Prepend (newest first)
-    data.guestbook_entries.unshift(entry);
-    // Trim to reasonable max (but keep all in storage; limit on query)
-    if (data.guestbook_entries.length > 200) {
-      data.guestbook_entries = data.guestbook_entries.slice(0, 200);
-    }
-    await this.writeData(data);
-    return entry;
+    return this.withFileLock(async () => {
+      const data = await this.readData();
+      const now = new Date();
+      const entry: GuestbookEntry = {
+        id: generateId(),
+        nickname,
+        message,
+        created_at: now.toISOString(),
+        status: 'published',
+      };
+      // Prepend (newest first)
+      data.guestbook_entries.unshift(entry);
+      await this.writeData(data);
+      return entry;
+    });
   }
 
-  async recentEntryCount(windowMs: number): Promise<number> {
+  async recentEntryCount(source: string, windowMs: number): Promise<number> {
     const data = await this.readData();
     const cutoff = Date.now() - windowMs;
     return data.guestbook_entries.filter((e) => {
+      if (source && e.nickname !== source) return false;
       const t = new Date(e.created_at).getTime();
       return t >= cutoff;
     }).length;
@@ -111,22 +133,24 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
   }
 
   async recordVisit(sessionHash: string): Promise<{ counted: boolean; total: number }> {
-    const data = await this.readData();
-    // Check if this session already has a visit
-    const existing = data.visits.find((v) => v.session_hash === sessionHash);
-    if (existing) {
-      // Idempotent — don't count again
-      return { counted: false, total: data.visits.length };
-    }
-    // Record new visit
-    const visit: VisitRecord = {
-      id: generateId(),
-      session_hash: sessionHash,
-      created_at: new Date().toISOString(),
-    };
-    data.visits.push(visit);
-    await this.writeData(data);
-    return { counted: true, total: data.visits.length };
+    return this.withFileLock(async () => {
+      const data = await this.readData();
+      // Check if this session already has a visit
+      const existing = data.visits.find((v) => v.session_hash === sessionHash);
+      if (existing) {
+        // Idempotent — don't count again
+        return { counted: false, total: data.visits.length };
+      }
+      // Record new visit
+      const visit: VisitRecord = {
+        id: generateId(),
+        session_hash: sessionHash,
+        created_at: new Date().toISOString(),
+      };
+      data.visits.push(visit);
+      await this.writeData(data);
+      return { counted: true, total: data.visits.length };
+    });
   }
 
   async isHealthy(): Promise<boolean> {

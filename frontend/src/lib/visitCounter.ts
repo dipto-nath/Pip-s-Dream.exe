@@ -31,6 +31,8 @@ export function getVisitCount(): number {
   return saved ?? INITIAL_COUNT;
 }
 
+let inMemorySessionCounted = false;
+
 /**
  * Increments the counter once per browser session.
  * Returns the new count.
@@ -39,15 +41,22 @@ export function recordVisit(): number {
   try {
     // Check if we already counted this session
     const alreadyCounted = sessionStorage.getItem(SESSION_KEY);
-    if (alreadyCounted) {
+    if (alreadyCounted || inMemorySessionCounted) {
       return getVisitCount();
     }
 
     const current = getVisitCount();
     const next = current + 1;
 
-    safeSet(localStorage, COUNTER_KEY, String(next));
-    safeSet(sessionStorage, SESSION_KEY, '1');
+    const counterSaved = safeSet(localStorage, COUNTER_KEY, String(next));
+    if (!counterSaved) {
+      return current;
+    }
+
+    const sessionSaved = safeSet(sessionStorage, SESSION_KEY, '1');
+    if (!sessionSaved) {
+      inMemorySessionCounted = true;
+    }
 
     return next;
   } catch {

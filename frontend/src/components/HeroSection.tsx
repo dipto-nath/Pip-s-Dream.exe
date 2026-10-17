@@ -212,6 +212,9 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
             transition={{ duration: 0.65, ease: 'easeOut' }}
             style={{ position: 'relative', flexShrink: 0 }}
           >
+            {/* Easter egg trigger */}
+            <EasterEggTrigger />
+
             <div
               onPointerMove={handlePointerMove}
               onPointerLeave={handlePointerLeave}
@@ -223,9 +226,6 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
                 cursor: 'pointer',
               }}
             >
-              {/* Easter egg trigger */}
-              <EasterEggTrigger />
-
               {/* Ambient glow */}
               <div
                 aria-hidden="true"

@@ -13,6 +13,8 @@ class PipAudioEngine {
   private scheduledOscillators: OscillatorNode[] = [];
   private lullabyTimer: ReturnType<typeof setTimeout> | null = null;
   private isLooping = false;
+  private isStarting = false;
+  private startGeneration = 0;
 
   private get isSupported(): boolean {
     return typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext: unknown }).webkitAudioContext !== 'undefined';
@@ -61,6 +63,8 @@ class PipAudioEngine {
 
   setMuted(muted: boolean): void {
     if (muted) {
+      this.startGeneration++;
+      this.isStarting = false;
       this.state = 'muted';
       if (this.masterGain) {
         this.masterGain.gain.setTargetAtTime(0, this.ctx?.currentTime ?? 0, 0.05);
@@ -96,6 +100,10 @@ class PipAudioEngine {
 
     osc.onended = () => {
       try { osc.disconnect(); gain.disconnect(); } catch { /* ignore */ }
+      const idx = this.scheduledOscillators.indexOf(osc);
+      if (idx !== -1) {
+        this.scheduledOscillators.splice(idx, 1);
+      }
     };
     this.scheduledOscillators.push(osc);
   }
@@ -121,18 +129,32 @@ class PipAudioEngine {
 
     osc.onended = () => {
       try { osc.disconnect(); gain.disconnect(); } catch { /* ignore */ }
+      const idx = this.scheduledOscillators.indexOf(osc);
+      if (idx !== -1) {
+        this.scheduledOscillators.splice(idx, 1);
+      }
     };
     this.scheduledOscillators.push(osc);
   }
 
   async startLullaby(): Promise<void> {
-    if (this.isMuted || this.isPlaying) return;
-    const ok = await this.resumeContext();
-    if (!ok || !this.ctx) return;
+    if (this.isMuted || this.isPlaying || this.isStarting) return;
+    this.isStarting = true;
+    const currentGen = ++this.startGeneration;
 
-    this.state = 'playing';
-    this.isLooping = true;
-    this.scheduleLullabyLoop();
+    try {
+      const ok = await this.resumeContext();
+      if (!ok || !this.ctx) return;
+      if (this.isMuted || this.startGeneration !== currentGen) return;
+
+      this.state = 'playing';
+      this.isLooping = true;
+      this.scheduleLullabyLoop();
+    } finally {
+      if (this.startGeneration === currentGen) {
+        this.isStarting = false;
+      }
+    }
   }
 
   private scheduleLullabyLoop(): void {
@@ -151,6 +173,8 @@ class PipAudioEngine {
   }
 
   stopLullaby(): void {
+    this.startGeneration++;
+    this.isStarting = false;
     this.isLooping = false;
     if (this.state === 'playing') {
       this.state = 'idle';

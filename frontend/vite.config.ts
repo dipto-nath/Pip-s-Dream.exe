@@ -9,4 +9,15 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
   },
-})
+  server: {
+    // Proxy /api requests to the local backend during development.
+    // In production, set VITE_API_BASE_URL to the deployed backend URL.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+});

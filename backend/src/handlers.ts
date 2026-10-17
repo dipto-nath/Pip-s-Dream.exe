@@ -54,13 +54,13 @@ export async function handleCreateGuestbook(
     };
   }
 
-  // 2. Rate limiting — check recent entries
-  // NOTE: In production, this should use IP-based rate limiting.
-  // For the local JSON store, we check total recent entries.
-  // A real implementation would check per-IP in the Edge Function.
+  // 2. Sanitize input
+  const sanitized = sanitizeGuestbookInput(input);
+
+  // 3. Rate limiting — check recent entries from this source
   try {
-    const recentCount = await storage.recentEntryCount(RATE_LIMIT_WINDOW_MS);
-    if (recentCount > 10) {
+    const recentCount = await storage.recentEntryCount(sanitized.nickname, RATE_LIMIT_WINDOW_MS);
+    if (recentCount > 0) {
       return {
         success: false,
         error: 'Slow down a little — Pip can only pin a few notes at a time.',
@@ -71,8 +71,7 @@ export async function handleCreateGuestbook(
     // Don't fail the request if rate-limit check fails — just skip it
   }
 
-  // 3. Sanitize and persist
-  const sanitized = sanitizeGuestbookInput(input);
+  // 4. Persist
   try {
     const entry = await storage.createEntry(sanitized.nickname, sanitized.message);
     return { success: true, data: entry, status: 201 };
