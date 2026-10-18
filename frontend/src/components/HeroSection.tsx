@@ -34,7 +34,7 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1rem, 3vw, 2.5rem)',
+        padding: 'clamp(3.8rem, 7vw, 4.8rem) clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4.5rem)',
         overflow: 'hidden',
       }}
     >
@@ -67,10 +67,11 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
 
       {/* Whimsical Floating Easter Egg Charm */}
       <div
+        className="hero-easter-egg-wrapper"
         style={{
           position: 'absolute',
-          top: 'clamp(24px, 5vh, 48px)',
-          right: 'clamp(16px, 4vw, 48px)',
+          top: 'clamp(14px, 3vh, 36px)',
+          right: 'clamp(14px, 3vw, 40px)',
           zIndex: 10,
         }}
       >

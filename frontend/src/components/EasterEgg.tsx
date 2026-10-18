@@ -126,6 +126,7 @@ export function EasterEggTrigger({ onEggFound }: EasterEggProps) {
 
         {/* Playful Animated Star Icon */}
         <span
+          className="easter-egg-star-icon"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -138,22 +139,28 @@ export function EasterEggTrigger({ onEggFound }: EasterEggProps) {
             boxShadow: '0 2px 8px rgba(245, 158, 11, 0.5)',
             transform: isHovered ? 'rotate(30deg) scale(1.15)' : 'rotate(0deg)',
             transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            flexShrink: 0,
           }}
         >
           <Star size={13} fill="currentColor" />
         </span>
 
-        {/* Text prompt with playful micro-copy */}
-        <span style={{ letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
+        {/* Text prompt with responsive visibility */}
+        <span className="easter-egg-text-desktop" style={{ letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
           {isHovered ? 'Poke Pip’s Secret! ✨' : found ? 'Pip’s Secret Dream ✦' : 'Secret Stardust 🤫'}
+        </span>
+        <span className="easter-egg-text-mobile" style={{ letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
+          {found ? '✦' : 'Secret'}
         </span>
 
         {/* Mini orbiting sparkles */}
         <Sparkles
           size={14}
+          className="easter-egg-sparkles"
           style={{
             color: 'var(--accent)',
             animation: prefersReduced ? 'none' : 'spin-slow 6s linear infinite',
+            flexShrink: 0,
           }}
         />
       </motion.button>

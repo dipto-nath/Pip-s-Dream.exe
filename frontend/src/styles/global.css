@@ -371,3 +371,45 @@ button {
 }
 
 .chaos-mode .marquee-track { animation-duration: 12s; }
+
+/* ── Responsive Easter Egg Charm ── */
+.easter-egg-text-mobile {
+  display: none;
+}
+.easter-egg-text-desktop {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .hero-easter-egg-wrapper {
+    top: 14px !important;
+    right: 14px !important;
+  }
+  .easter-egg-btn {
+    padding: 5px 10px 5px 6px !important;
+    gap: 5px !important;
+    font-size: 0.74rem !important;
+  }
+  .easter-egg-text-desktop {
+    display: none !important;
+  }
+  .easter-egg-text-mobile {
+    display: inline !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .easter-egg-btn {
+    padding: 0 !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+  }
+  .easter-egg-text-mobile {
+    display: none !important;
+  }
+  .easter-egg-sparkles {
+    display: none !important;
+  }
+}
