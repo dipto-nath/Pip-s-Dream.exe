@@ -279,4 +279,37 @@ describe('JsonStorage', () => {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  it('preserves rate-limit history when entries are trimmed beyond 200 cap', async () => {
+    const fs = await import('node:fs');
+    const os = await import('node:os');
+    const path = await import('node:path');
+    const { JsonStorage } = await import('../jsonStorage');
+
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pip-json-test-'));
+    try {
+      const jsonStorage = new JsonStorage(tempDir);
+      // User1 posts first
+      await jsonStorage.createEntry('User1', 'First message');
+
+      // 205 entries from other users follow, trimming User1 from guestbook_entries
+      for (let i = 2; i <= 206; i++) {
+        await jsonStorage.createEntry(`User${i}`, `Message ${i}`);
+      }
+
+      // User1 should still have recentEntryCount > 0 within the window
+      const count = await jsonStorage.recentEntryCount('User1', 60000);
+      expect(count).toBe(1);
+
+      // And handleCreateGuestbook should enforce rate limiting
+      const result = await handleCreateGuestbook(jsonStorage, {
+        nickname: 'User1',
+        message: 'Second message too soon',
+      });
+      expect(result.success).toBe(false);
+      expect(result.status).toBe(429);
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });

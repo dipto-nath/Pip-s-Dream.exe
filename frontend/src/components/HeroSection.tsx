@@ -1,14 +1,15 @@
 // =============================================================
-// PIP.EXE — HeroSection + PipCharacter
+// PIP.EXE — HeroSection + Interactive Pip Stage
+// Scenic nursery sky background + cursor-tracking Pip character
 // =============================================================
 
-import { useRef, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, Star } from 'lucide-react';
+import { ArrowDown, Star, Sparkles } from 'lucide-react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { EasterEggTrigger } from './EasterEgg';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
+import { InteractivePip } from './InteractivePip';
 
 interface HeroSectionProps {
   chaosMode: boolean;
@@ -18,111 +19,120 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [hovered, setHovered] = useState(false);
-  const rafRef = useRef<number>(0);
-  const targetTilt = useRef({ x: 0, y: 0 });
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (prefersReduced || !imgRef.current) return;
-    const rect = imgRef.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = ((e.clientX - cx) / (rect.width / 2)) * 5;
-    const dy = ((e.clientY - cy) / (rect.height / 2)) * -3;
-    targetTilt.current = { x: dx, y: dy };
-
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setTilt((prev) => ({
-        x: prev.x + (targetTilt.current.x - prev.x) * 0.1,
-        y: prev.y + (targetTilt.current.y - prev.y) * 0.1,
-      }));
-    });
-  }, [prefersReduced]);
-
-  const handlePointerLeave = useCallback(() => {
-    setHovered(false);
-    targetTilt.current = { x: 0, y: 0 };
-    setTilt({ x: 0, y: 0 });
-  }, []);
 
   return (
     <section
       id="hero"
       aria-labelledby="hero-heading"
+      className="hero-scenic-stage"
       style={{
-        padding: 'clamp(3rem, 6vw, 6rem) 0 clamp(2rem, 4vw, 4rem)',
-        background: 'var(--surface)',
         position: 'relative',
+        minHeight: 'clamp(620px, 86vh, 900px)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 'clamp(2.5rem, 5vw, 4.5rem) clamp(1rem, 3vw, 2.5rem)',
         overflow: 'hidden',
       }}
     >
-      {/* Background decorative stars */}
-      {!prefersReduced && (
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-          {[
-            { top: '12%', left: '8%',  size: 18, rotate: 15,  color: 'var(--amber)' },
-            { top: '70%', left: '5%',  size: 12, rotate: -20, color: 'var(--accent)' },
-            { top: '25%', right: '6%', size: 22, rotate: 10,  color: 'var(--amber-bright)' },
-            { top: '60%', right: '4%', size: 14, rotate: -8,  color: 'var(--accent)' },
-            { top: '45%', left: '2%', size: 10,  rotate: 30,  color: 'var(--amber)' },
-          ].map((s, i) => (
-            <Star
-              key={i}
-              size={s.size}
-              fill="currentColor"
-              style={{
-                position: 'absolute',
-                top: s.top,
-                left: (s as { left?: string }).left,
-                right: (s as { right?: string }).right,
-                color: s.color,
-                transform: `rotate(${s.rotate}deg)`,
-                opacity: 0.4,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Scenic Nursery Sky Background */}
+      <div
+        aria-hidden="true"
+        className="hero-scenic-bg"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: "url('/assets/nursery_sky_bg.png')",
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          zIndex: 0,
+        }}
+      />
 
-      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) auto',
-            gap: 'clamp(2rem, 4vw, 5rem)',
-            alignItems: 'center',
-          }}
-          className="hero-grid"
+      {/* Gentle dream mode overlay so text and stars remain readable in dark theme */}
+      <div
+        aria-hidden="true"
+        className="hero-theme-overlay"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Hidden Easter Egg Star in the starry sky */}
+      <div style={{ position: 'absolute', top: '16%', right: '14%', zIndex: 3 }}>
+        <EasterEggTrigger />
+      </div>
+
+      <div
+        className="container"
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          maxWidth: '820px',
+        }}
+      >
+        {/* Badges & Header Intro */}
+        <motion.div
+          initial={prefersReduced ? false : { opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          style={{ marginBottom: 'var(--sp-2)' }}
         >
-          {/* ── Text column ── */}
-          <motion.div
-            initial={prefersReduced ? false : { opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+          <div
+            style={{
+              display: 'inline-flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginBottom: 'var(--sp-2)',
+            }}
           >
-            <div style={{ marginBottom: 'var(--sp-3)' }}>
-              <span className="sticker" style={{ transform: 'rotate(-1deg)', display: 'inline-block', marginBottom: 8 }}>
-                THE MIDNIGHT NURSERY
-              </span>
-              {' '}
-              <span className="sticker" style={{ transform: 'rotate(0.5deg)', display: 'inline-block' }}>
-                EMPLOYEE NO. 001
-              </span>
-            </div>
+            <span className="sticker" style={{ transform: 'rotate(-1deg)' }}>
+              THE MIDNIGHT NURSERY
+            </span>
+            <span className="sticker" style={{ transform: 'rotate(1deg)' }}>
+              EMPLOYEE NO. 001
+            </span>
+          </div>
 
+          <div
+            className="hero-liquid-glass"
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              background: 'rgba(255, 252, 246, 0.68)',
+              backdropFilter: 'blur(14px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(14px) saturate(150%)',
+              border: '1px solid rgba(255, 255, 255, 0.85)',
+              borderRadius: 'clamp(1.25rem, 2.5vw, 1.75rem)',
+              padding: 'clamp(1.1rem, 2.2vw, 1.6rem) clamp(1.25rem, 3vw, 2.25rem)',
+              boxShadow:
+                '0 16px 38px rgba(184, 115, 51, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.95)',
+              maxWidth: '680px',
+              margin: '0 auto',
+              transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+            }}
+          >
             <h1
               id="hero-heading"
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(2rem, 5.5vw, 3.8rem)',
+                fontSize: 'clamp(1.9rem, 4.2vw, 3.2rem)',
                 fontWeight: 700,
-                lineHeight: 1.1,
+                lineHeight: 1.15,
                 color: 'var(--body-text)',
-                marginBottom: 'var(--sp-5)',
                 fontStyle: 'italic',
+                margin: '0 0 var(--sp-2)',
+                textShadow: '0 1px 10px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0,0,0,0.04)',
               }}
             >
               Hi, I'm Pip.{' '}
@@ -134,205 +144,142 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
             <p
               style={{
                 fontFamily: 'var(--font-story)',
-                fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
+                fontSize: 'clamp(0.95rem, 1.6vw, 1.08rem)',
                 color: 'var(--text-muted)',
-                lineHeight: 1.75,
-                marginBottom: 'var(--sp-6)',
+                lineHeight: 1.6,
                 maxWidth: '52ch',
+                margin: '0 auto',
               }}
             >
-              Junior Dream Engineer at the Midnight Nursery. Inventor of lullabies,
-              calibrator of nightlights, and mapper of dream-delivery routes across
-              the sleeping rooftops of the neighborhood.
+              Junior Dream Engineer at the Midnight Nursery. Calibrator of nightlights,
+              inventor of lullabies, and delivery runner across sleeping rooftops.
             </p>
+          </div>
+        </motion.div>
 
-            <blockquote
-              style={{
-                borderLeft: '3px solid var(--amber)',
-                paddingLeft: 'var(--sp-4)',
-                marginBottom: 'var(--sp-8)',
-                fontFamily: 'var(--font-story)',
-                fontStyle: 'italic',
-                fontSize: '0.95rem',
-                color: 'var(--text-muted)',
-              }}
-            >
-              "Every good night begins with good light. And sometimes a slightly off-key lullaby."
-            </blockquote>
+        {/* Center Stage: Interactive Pip with Cursor-Tracking Pupils and Body Shift */}
+        <motion.div
+          initial={prefersReduced ? false : { opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
+          style={{
+            margin: 'var(--sp-2) 0 var(--sp-3)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <InteractivePip
+            soundEnabled={soundEnabled}
+            onChime={playChime}
+          />
 
-            <div style={{ display: 'flex', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
-              <a
-                href="#work"
-                className="btn-primary"
-                onClick={() => { if (soundEnabled) playChime(880); }}
-              >
-                Explore my work
-                <ArrowDown size={15} />
-              </a>
-              <a
-                href="#about"
-                className="btn-secondary"
-                onClick={() => { if (soundEnabled) playChime(660); }}
-              >
-                Meet Pip
-                <Star size={14} />
-              </a>
-            </div>
-
-            {/* Character dossier teaser */}
-            {chaosMode && (
-              <motion.div
-                initial={{ opacity: 0, rotate: -3 }}
-                animate={{ opacity: 1, rotate: -3 }}
-                style={{
-                  marginTop: 'var(--sp-6)',
-                  background: 'var(--surface-panel)',
-                  border: '2px dashed var(--border-warm)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: 'var(--sp-4)',
-                  maxWidth: '300px',
-                  fontSize: '0.82rem',
-                  fontFamily: 'var(--font-ui)',
-                  color: 'var(--text-muted)',
-                  boxShadow: '4px 4px 0 var(--shadow-warm)',
-                }}
-              >
-                📋 <strong>Employee File — Pip</strong><br />
-                Role: Junior Dream Engineer<br />
-                Clearance: Night Shift Only<br />
-                Status: Happily Employed ⭐
-              </motion.div>
-            )}
-          </motion.div>
-
-          {/* ── Character column ── */}
-          <motion.div
-            initial={prefersReduced ? false : { opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.65, ease: 'easeOut' }}
-            style={{ position: 'relative', flexShrink: 0 }}
+          {/* Interactive cursor tip badge */}
+          <div
+            style={{
+              marginTop: 'var(--sp-2)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontFamily: 'var(--font-ui)',
+              fontSize: '0.78rem',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              background: 'rgba(255, 250, 240, 0.7)',
+              backdropFilter: 'blur(8px)',
+              padding: '4px 14px',
+              borderRadius: 'var(--radius-full)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            }}
           >
-            {/* Easter egg trigger */}
-            <EasterEggTrigger />
+            <Sparkles size={13} style={{ color: 'var(--accent)' }} />
+            <span>Pip tracks your cursor · Click for a chime</span>
+          </div>
+        </motion.div>
 
-            <div
-              onPointerMove={handlePointerMove}
-              onPointerLeave={handlePointerLeave}
-              onPointerEnter={() => setHovered(true)}
-              onClick={() => { if (soundEnabled) playChime(1046); }}
-              style={{
-                position: 'relative',
-                display: 'inline-block',
-                cursor: 'pointer',
-              }}
+        {/* Actions & Bedtime Quote */}
+        <motion.div
+          initial={prefersReduced ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--sp-3)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 'var(--sp-4)', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <a
+              href="#work"
+              className="btn-primary"
+              onClick={() => { if (soundEnabled) playChime(880); }}
             >
-              {/* Ambient glow */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: '-15%',
-                  borderRadius: '50%',
-                  background: `radial-gradient(circle, rgba(245,158,11,${hovered ? 0.25 : 0.1}) 0%, transparent 70%)`,
-                  transition: 'background 0.4s',
-                  pointerEvents: 'none',
-                  zIndex: 0,
-                }}
-              />
+              Explore my work
+              <ArrowDown size={15} />
+            </a>
+            <a
+              href="#about"
+              className="btn-secondary"
+              onClick={() => { if (soundEnabled) playChime(660); }}
+            >
+              Meet Pip
+              <Star size={14} />
+            </a>
+          </div>
 
-              <img
-                ref={imgRef}
-                src="/assets/pip_avatar_cloud.png"
-                alt="Pip, the skull-faced baby dream engineer, wearing a star-decorated nightcap and riding a small cloud"
-                loading="eager"
-                fetchPriority="high"
-                width={340}
-                height={340}
-                style={{
-                  width: 'clamp(200px, 28vw, 340px)',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  position: 'relative',
-                  zIndex: 1,
-                  transform: prefersReduced
-                    ? 'none'
-                    : `rotate(${tilt.x}deg) translateY(${tilt.y}px)`,
-                  transition: prefersReduced ? 'none' : 'transform 0.15s ease-out',
-                  animation: prefersReduced ? 'none' : 'float-pip 6s ease-in-out infinite',
-                  filter: hovered
-                    ? 'drop-shadow(0 8px 24px rgba(245,158,11,0.45))'
-                    : 'drop-shadow(0 4px 12px rgba(245,158,11,0.2))',
-                  borderRadius: 'var(--radius-xl)',
-                }}
-              />
+          <blockquote
+            style={{
+              fontFamily: 'var(--font-story)',
+              fontStyle: 'italic',
+              fontSize: '0.9rem',
+              color: 'var(--text-muted)',
+              margin: 'var(--sp-2) 0 0',
+              maxWidth: '50ch',
+            }}
+          >
+            "Every good night begins with good light. And sometimes a slightly off-key lullaby."
+          </blockquote>
 
-              {/* Floating star stickers */}
-              {!prefersReduced && (
-                <>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute',
-                      top: '10%',
-                      left: '-12%',
-                      fontSize: '1.5rem',
-                      animation: 'float-pip 4s ease-in-out infinite 0.5s',
-                      zIndex: 2,
-                    }}
-                  >
-                    ✦
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute',
-                      bottom: '18%',
-                      right: '-10%',
-                      fontSize: '1rem',
-                      animation: 'float-pip 5s ease-in-out infinite 1.2s',
-                      color: 'var(--accent)',
-                      zIndex: 2,
-                    }}
-                  >
-                    ★
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Name badge */}
-            <div
+          {/* Character dossier teaser in chaos mode */}
+          {chaosMode && (
+            <motion.div
+              initial={{ opacity: 0, rotate: -2 }}
+              animate={{ opacity: 1, rotate: -2 }}
               style={{
-                marginTop: 'var(--sp-4)',
-                textAlign: 'center',
+                marginTop: 'var(--sp-3)',
+                background: 'var(--surface-panel)',
+                border: '2px dashed var(--border-warm)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--sp-3) var(--sp-4)',
+                fontSize: '0.82rem',
                 fontFamily: 'var(--font-ui)',
-                fontSize: '0.8rem',
-                color: 'var(--text-faint)',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
+                color: 'var(--text-muted)',
+                boxShadow: '4px 4px 0 var(--shadow-warm)',
               }}
             >
-              ✦ PIP · Junior Dream Engineer ✦
-            </div>
-          </motion.div>
-        </div>
+              📋 <strong>Employee File — Pip</strong> · Role: Junior Dream Engineer · Clearance: Night Shift Only ⭐
+            </motion.div>
+          )}
+        </motion.div>
       </div>
 
-      {/* Responsive styles injected globally */}
       <style>{`
-        @media (max-width: 640px) {
-          .hero-grid {
-            grid-template-columns: 1fr !important;
-            text-align: center;
-          }
-          .hero-grid > div:last-child {
-            order: -1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          }
-          .hero-grid p { margin-inline: auto; }
-          .hero-grid blockquote { text-align: left; }
+        [data-theme='dream'] .hero-scenic-bg {
+          filter: brightness(0.68) saturate(1.15) hue-rotate(205deg);
+        }
+        [data-theme='dream'] .hero-theme-overlay {
+          background: radial-gradient(circle at 50% 50%, rgba(26, 18, 37, 0.4) 0%, rgba(15, 10, 24, 0.75) 100%);
+        }
+        [data-theme='dream'] .hero-liquid-glass {
+          background: rgba(26, 17, 36, 0.72) !important;
+          border-color: rgba(255, 255, 255, 0.16) !important;
+          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 24px rgba(245, 158, 11, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+        }
+        [data-theme='dream'] #hero-heading {
+          text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.25) !important;
         }
       `}</style>
     </section>

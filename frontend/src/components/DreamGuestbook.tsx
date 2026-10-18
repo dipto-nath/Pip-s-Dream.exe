@@ -123,11 +123,8 @@ export function DreamGuestbook() {
         } else {
           setSubmitError(result.error.message);
         }
-      } else if (result.error.type === 'rate_limit') {
-        setSubmitError(result.error.message);
       } else {
         setSubmitError(result.error.message);
-        setBackendOnline(false);
       }
     }
 

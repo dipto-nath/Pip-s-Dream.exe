@@ -18,3 +18,5 @@ data/*.json
 
 # Supabase
 .supabase/
+supabase/.temp/
+*.local

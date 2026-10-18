@@ -29,7 +29,8 @@ serve(async (req) => {
     return new Response('ok', { status: 200, headers: corsHeaders() });
   }
 
-  if (path === '/api/stats' && req.method === 'GET') {
+  const isStatsPath = path === '/stats' || path === '/api/stats' || path === '/' || path.endsWith('/stats');
+  if (isStatsPath && req.method === 'GET') {
     const { data, error } = await supabase
       .from('visitor_count')
       .select('count')

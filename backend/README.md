@@ -62,37 +62,39 @@ Rate-limited: 1 submission per nickname within a 5-second window.
 
 ### Deployment to Supabase Edge Functions
 
-1. Ensure the Supabase CLI is installed:
+1. Ensure the Supabase CLI is installed via a supported method (such as a local dev dependency or Homebrew):
    ```bash
-   npm install -g supabase
+   # Option A: Install as a dev dependency in backend
+   npm install --save-dev supabase
+
+   # Option B: Install globally via Homebrew (macOS)
+   brew install supabase/tap/supabase
    ```
 
-2. Link your project:
+2. Link your project from the `backend/` directory:
    ```bash
-   supabase link --project-ref <your-ref>
+   cd backend
+   npx supabase link --project-ref <your-ref>
    ```
 
 3. Set up the database:
    ```bash
-   supabase db push
+   npx supabase db push
    ```
 
 4. Deploy the functions:
    ```bash
-   supabase functions deploy guestbook --project-ref <your-ref>
-   supabase functions deploy visits --project-ref <your-ref>
-   supabase functions deploy stats --project-ref <your-ref>
-   supabase functions deploy health --project-ref <your-ref>
+   npx supabase functions deploy guestbook
+   npx supabase functions deploy visits
+   npx supabase functions deploy stats
+   npx supabase functions deploy health
    ```
 
-5. Set the service role key as a function secret:
-   ```bash
-   supabase functions secrets set SUPABASE_SERVICE_ROLE_KEY --project-ref <your-ref>
-   ```
+   *(Note: Supabase automatically injects reserved secrets including `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL` into Edge Functions, so no manual secret configuration is required for them.)*
 
-6. Set `VITE_API_BASE_URL` in the frontend to:
+5. Configure `VITE_API_BASE_URL` in `frontend/.env.local`:
    ```
-   https://<your-ref>.supabase.co/functions/v1
+   VITE_API_BASE_URL=https://<your-ref>.supabase.co/functions/v1
    ```
 
 ### File Structure
@@ -118,6 +120,8 @@ backend/
 │   └── health/index.ts
 ├── migrations/             # Supabase SQL migrations
 │   └── 001_initial_schema.sql
+├── supabase/
+│   └── config.toml         # Supabase CLI configuration
 └── package.json
 ```
 

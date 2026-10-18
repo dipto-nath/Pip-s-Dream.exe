@@ -36,7 +36,8 @@ serve(async (req) => {
     return new Response('ok', { status: 200, headers: corsHeaders() });
   }
 
-  if (path === '/api/visits' && method === 'POST') {
+  const isVisitsPath = path === '/visits' || path === '/api/visits' || path === '/' || path.endsWith('/visits');
+  if (isVisitsPath && method === 'POST') {
     const contentLength = Number(req.headers.get('content-length') ?? 0);
     if (contentLength > 64 * 1024) {
       return new Response(

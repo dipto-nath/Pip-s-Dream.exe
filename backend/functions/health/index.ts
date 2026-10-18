@@ -24,7 +24,8 @@ serve(async (req) => {
     return new Response('ok', { status: 200, headers: corsHeaders() });
   }
 
-  if (path === '/api/health' && req.method === 'GET') {
+  const isHealthPath = path === '/health' || path === '/api/health' || path === '/' || path.endsWith('/health');
+  if (isHealthPath && req.method === 'GET') {
     const checks: Record<string, boolean> = {};
 
     // Check database connectivity with a trivial query

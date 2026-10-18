@@ -9,12 +9,18 @@ import { apiRequest } from './api';
 import { formatCount, getVisitCount } from './visitCounter';
 
 const SESSION_KEY = 'pip-exe-session-id';
+const LEGACY_SESSION_KEY = 'pip-exe-session';
 
 /** Generate or retrieve a session ID for this browser session. */
 function getSessionId(): string {
   try {
     const existing = sessionStorage.getItem(SESSION_KEY);
     if (existing) return existing;
+    const legacy = sessionStorage.getItem(LEGACY_SESSION_KEY);
+    if (legacy) {
+      sessionStorage.setItem(SESSION_KEY, legacy);
+      return legacy;
+    }
     const newId = crypto.randomUUID();
     sessionStorage.setItem(SESSION_KEY, newId);
     return newId;

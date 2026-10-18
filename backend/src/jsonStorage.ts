@@ -9,9 +9,15 @@ import crypto from 'node:crypto';
 import type { GuestbookEntry, VisitorStats, VisitRecord } from './types';
 import type { GuestbookStorage, VisitStorage } from './storage';
 
+export interface RateLimitRecord {
+  source: string;
+  timestamp: number;
+}
+
 export interface JsonDataFile {
   guestbook_entries: GuestbookEntry[];
   visits: VisitRecord[];
+  rate_limits?: RateLimitRecord[];
 }
 
 const DEFAULT_DATA_DIR = join(process.cwd(), 'data');
@@ -67,10 +73,11 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
       return {
         guestbook_entries: parsed.guestbook_entries ?? [],
         visits: parsed.visits ?? [],
+        rate_limits: parsed.rate_limits ?? [],
       };
     } catch (err: unknown) {
       if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
-        return { guestbook_entries: [], visits: [] };
+        return { guestbook_entries: [], visits: [], rate_limits: [] };
       }
       throw err;
     }
@@ -108,7 +115,18 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
         created_at: now.toISOString(),
         status: 'published',
       };
-      // Prepend (newest first)
+
+      // Record in rate-limit history separately from displayed entries
+      data.rate_limits = data.rate_limits ?? [];
+      data.rate_limits.push({
+        source: nickname,
+        timestamp: now.getTime(),
+      });
+      // Prune rate-limit history older than 10 minutes to avoid unbounded growth
+      const pruneCutoff = now.getTime() - 10 * 60 * 1000;
+      data.rate_limits = data.rate_limits.filter((r) => r.timestamp >= pruneCutoff);
+
+      // Prepend (newest first) and apply 200-entry display cap
       data.guestbook_entries.unshift(entry);
       if (data.guestbook_entries.length > 200) {
         data.guestbook_entries = data.guestbook_entries.slice(0, 200);
@@ -121,6 +139,16 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
   async recentEntryCount(source: string, windowMs: number): Promise<number> {
     const data = await this.readData();
     const cutoff = Date.now() - windowMs;
+
+    // Use separate rate-limit history if present
+    if (data.rate_limits && data.rate_limits.length > 0) {
+      return data.rate_limits.filter((r) => {
+        if (source && r.source !== source) return false;
+        return r.timestamp >= cutoff;
+      }).length;
+    }
+
+    // Fallback to guestbook_entries for backward compatibility
     return data.guestbook_entries.filter((e) => {
       if (source && e.nickname !== source) return false;
       const t = new Date(e.created_at).getTime();

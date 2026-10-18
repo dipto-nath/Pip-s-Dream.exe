@@ -5,6 +5,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fetchVisitorStats, recordVisit, getSessionId } from '../lib/visitService';
+import { API_BASE } from '../lib/api';
 
 function mockResponse(status: number, body: unknown) {
   const headers = { 'content-type': 'application/json' };
@@ -41,6 +42,13 @@ describe('getSessionId', () => {
     expect(sessionStorage.getItem('pip-exe-session-id')).toBe(id);
   });
 
+  it('migrates legacy pip-exe-session key when present', () => {
+    sessionStorage.setItem('pip-exe-session', 'legacy-tab-session-456');
+    const id = getSessionId();
+    expect(id).toBe('legacy-tab-session-456');
+    expect(sessionStorage.getItem('pip-exe-session-id')).toBe('legacy-tab-session-456');
+  });
+
   it('handles sessionStorage unavailable gracefully', () => {
     vi.spyOn(globalThis.Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('storage disabled');
@@ -61,7 +69,7 @@ describe('fetchVisitorStats — online', () => {
     expect(result.isOnline).toBe(true);
     expect(result.stats.total_visits).toBe(1234);
 
-    expect(fetch).toHaveBeenCalledWith('/api/stats', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/stats`, expect.objectContaining({
       method: 'GET',
     }));
   });
@@ -100,7 +108,7 @@ describe('recordVisit — online', () => {
     expect(result.total).toBe(42);
     expect(result.isOnline).toBe(true);
 
-    expect(fetch).toHaveBeenCalledWith('/api/visits', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/visits`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ sessionId: 'session-abc' }),
     }));

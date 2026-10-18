@@ -10,6 +10,7 @@ import {
   checkBackendHealth,
   _resetBackendCache,
 } from '../lib/guestbookService';
+import { API_BASE } from '../lib/api';
 
 // Helper: create a mock fetch Response
 function mockResponse(status: number, body: unknown) {
@@ -55,7 +56,7 @@ describe('fetchGuestbookEntries — online', () => {
     expect(result.entries[0].message).toBe('Hello!');
     expect(result.entries[0].dateDisplay).toBeTruthy();
 
-    expect(fetch).toHaveBeenCalledWith('/api/guestbook', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/guestbook`, expect.objectContaining({
       method: 'GET',
     }));
   });
@@ -127,7 +128,7 @@ describe('submitGuestbookEntry — online', () => {
     expect(result.entry?.message).toBe('Dream big!');
     expect(result.isLocalFallback).toBeUndefined();
 
-    expect(fetch).toHaveBeenCalledWith('/api/guestbook', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/guestbook`, expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ nickname: 'Pip', message: 'Dream big!' }),
     }));

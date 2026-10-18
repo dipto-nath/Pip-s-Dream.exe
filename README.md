@@ -58,10 +58,10 @@ git clone <repository-url>
 cd "Pip's Dream.exe"
 
 # Frontend
-npm install --workspace=frontend
+cd frontend && npm install
 
 # Backend (local development)
-npm install --workspace=backend
+cd ../backend && npm install
 ```
 
 > **Note:** This project uses a monorepo structure:
@@ -75,30 +75,33 @@ npm install --workspace=backend
 ### Frontend
 
 ```bash
-npm run dev --workspace=frontend    # Start dev server at http://localhost:5173
-npm run build --workspace=frontend  # Production build
-npm run preview --workspace=frontend # Preview production build
-npm run test --workspace=frontend   # Run tests in watch mode
-npm run test:run --workspace=frontend # Run tests once
-npm run lint --workspace=frontend   # Run oxlint
+cd frontend
+npm run dev        # Start dev server at http://localhost:5173
+npm run build      # Production build
+npm run preview    # Preview production build
+npm run test       # Run tests in watch mode
+npm run test:run   # Run tests once
+npm run lint       # Run oxlint
 ```
 
 ### Backend
 
 ```bash
-npm run dev --workspace=backend      # Start local server at http://localhost:3001
-npm run dev:once --workspace=backend # Start server once
-npm run build --workspace=backend    # Type-check (tsc)
-npm run test:run --workspace=backend # Run all backend tests (unit + HTTP)
-npm run lint --workspace=backend      # Run oxlint
+cd backend
+npm run dev        # Start local server at http://localhost:3001
+npm run dev:once   # Start server once
+npm run build      # Type-check (tsc)
+npm run test:run   # Run all backend tests (unit + HTTP)
+npm run lint       # Run oxlint
 ```
 
 ### Quick Backend Test
 
 ```bash
-npm run dev:once --workspace=backend &
+cd backend
+npm run dev:once &
 sleep 2
-npx tsx backend/src/testHttp.ts
+npx tsx src/testHttp.ts
 kill %1
 ```
 
@@ -122,10 +125,10 @@ Three presets: Whisper (20%), Moonbeam (55%), Stardust (85%). Toggle on/off, swi
 An inline SVG rooftop map. As you scroll, a luminous dream capsule travels along a bezier path from the Nursery Tower -> Hedgehog Den -> Crescent Lane. Reduced-motion users see the full path immediately.
 
 ### The Guestbook
-Sign with your name and a dream message. Entries are validated (1-24 chars name, 1-120 chars message), persisted to `localStorage`, and displayed as pinned paper notes. Up to 50 entries are retained.
+Sign with your name and a dream message. Entries are validated (1-24 chars name, 1-120 chars message) and persisted to backend storage when available so they are shared across visitors. If the backend is unreachable, entries fall back to `localStorage` with a clear offline notice. Up to 50 entries are retained locally.
 
 ### The Hit Counter
-A vintage-style odometer showing "DREAM VISITS ON THIS DEVICE." Increments once per browser session. Fully local -- not a global analytics system.
+A vintage-style odometer tracking global visits through the backend API, incrementing once per browser session. When the backend is unavailable, it gracefully shows a "Local Only" status with the device count rather than presenting a false global total.
 
 ### Chaos Mode
 The zap toggle in the header adds controlled early-web chaos: rotated project cards, a faster marquee, extra sticker labels, and the draggable Dream Console window. Layout changes are stable and deterministic (no random re-renders).
@@ -185,7 +188,8 @@ These remain browser-local only (not shared):
 ### Frontend
 
 ```bash
-npm run build --workspace=frontend
+cd frontend
+npm run build
 ```
 
 Produces a static `dist/` directory. Deploy to any static host:
@@ -200,13 +204,15 @@ See [`backend/README.md`](backend/README.md#deployment-to-supabase-edge-function
 
 ```bash
 cd backend
-supabase functions deploy guestbook
-supabase functions deploy visits
-supabase functions deploy stats
-supabase functions deploy health
+npx supabase link --project-ref <your-ref>
+npx supabase db push
+npx supabase functions deploy guestbook
+npx supabase functions deploy visits
+npx supabase functions deploy stats
+npx supabase functions deploy health
 ```
 
-The frontend automatically uses the backend when `VITE_API_BASE_URL` is set. When it's not set or the backend is unreachable, the frontend gracefully falls back to local-only mode.
+In development, leaving `VITE_API_BASE_URL` unset uses the default relative `/api` route proxied to the local backend. In production environments without a local proxy, set `VITE_API_BASE_URL` to your deployed backend URL (e.g. Supabase functions URL); if unset or unreachable in production, the frontend gracefully falls back to local-only mode.
 
 The only build requirement is Node.js >= 20.
 
@@ -256,6 +262,8 @@ Pip's Dream.exe/
     │   └── health/index.ts
     ├── migrations/              # SQL migrations
     │   └── 001_initial_schema.sql
+    ├── supabase/                # Supabase CLI configuration
+    │   └── config.toml
     ├── data/                    # Local JSON data (gitignored)
     ├── tsconfig.json
     ├── .env.example             # Backend env vars
