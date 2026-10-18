@@ -483,8 +483,8 @@ export function DreamDeliveryMap() {
             position: 'absolute',
             pointerEvents: 'none',
             zIndex: 9,
-            width: 'clamp(40px, 5.2vw, 68px)',
-            height: 'clamp(40px, 5.2vw, 68px)',
+            width: 'clamp(46px, 6vw, 76px)',
+            aspectRatio: '667 / 990',
             transform: 'translate(-50%, -50%)',
           }}
         >
@@ -501,28 +501,28 @@ export function DreamDeliveryMap() {
             <div
               style={{
                 position: 'absolute',
-                top: '55%',
-                left: '50%',
+                top: '62%',
+                left: '52%',
                 transform: 'translate(-50%, -50%)',
-                width: '120%',
-                height: '120%',
+                width: '110%',
+                height: '110%',
                 borderRadius: '50%',
                 background:
-                  'radial-gradient(circle, rgba(251, 191, 36, 0.45) 0%, rgba(245, 158, 11, 0.15) 50%, transparent 75%)',
-                filter: 'blur(8px)',
+                  'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, rgba(245, 158, 11, 0.2) 50%, transparent 75%)',
+                filter: 'blur(7px)',
               }}
             />
 
             <img
-              src="/assets/pip_interactive_character.png"
-              alt="Pip delivering dream"
+              src="/assets/pip_flying.png"
+              alt="Pip flying to deliver dreams"
               draggable={false}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
                 filter:
-                  'drop-shadow(0 6px 12px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))',
+                  'drop-shadow(0 6px 14px rgba(0,0,0,0.32)) drop-shadow(0 0 10px rgba(251, 191, 36, 0.75))',
               }}
             />
           </div>
