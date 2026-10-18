@@ -1,6 +1,7 @@
 // =============================================================
 // PIP.EXE — DreamDeliveryMap
 // Project 03: Follow the Lanterns — Interactive Dream Delivery Routes
+// Fully responsive for Desktop, Tablet, and Mobile
 // =============================================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -13,6 +14,7 @@ import { useSound } from '../hooks/useSound';
 export interface DreamRouteStop {
   id: string;
   name: string;
+  shortName: string;
   title: string;
   tagline: string;
   description: string;
@@ -29,6 +31,7 @@ const DREAM_STOPS: DreamRouteStop[] = [
   {
     id: 'bakers-dream',
     name: "The Little Baker's Dream",
+    shortName: "Baker's Dream",
     title: "The Little Baker's Dream",
     tagline: 'A sleepy bakery on the western cliff',
     description:
@@ -45,6 +48,7 @@ const DREAM_STOPS: DreamRouteStop[] = [
   {
     id: 'hedgehog-den',
     name: 'Hedgehog Den',
+    shortName: 'Hedgehog Den',
     title: "The Hedgehog's Cloud Castle",
     tagline: 'Three hedgehogs tucked beneath moss',
     description:
@@ -61,6 +65,7 @@ const DREAM_STOPS: DreamRouteStop[] = [
   {
     id: 'stargazer-tower',
     name: "The Stargazer's Tower",
+    shortName: 'Stargazer Tower',
     title: "The Stargazer's Tower",
     tagline: 'The celestial clockmaker on the middle tier',
     description:
@@ -77,6 +82,7 @@ const DREAM_STOPS: DreamRouteStop[] = [
   {
     id: 'whisper-lake',
     name: 'Whisper Lake Haven',
+    shortName: 'Whisper Lake',
     title: 'The Whisper Lake Haven',
     tagline: 'The quiet rowboat between water lilies',
     description:
@@ -93,6 +99,7 @@ const DREAM_STOPS: DreamRouteStop[] = [
   {
     id: 'cloud-citadel',
     name: 'The High Cloud Citadel',
+    shortName: 'Cloud Citadel',
     title: 'The High Cloud Citadel',
     tagline: 'The Great Nursery Citadel atop the sky',
     description:
@@ -125,7 +132,7 @@ export function DreamDeliveryMap() {
   const { playChime } = useSound(soundEnabled);
 
   const currentStop = DREAM_STOPS[selectedStopIndex];
-  // Dynamically dock card on the left when stop is on the right (like Stop 5 castle) so no lantern is hidden
+  // Dynamically dock card on the left when stop is on the right (like Stop 5 castle) so no lantern is hidden on desktop
   const isCardOnLeft = manualSide === 'auto' ? currentStop.x > 50 : manualSide === 'left';
 
   // Handle selecting a lantern
@@ -179,7 +186,7 @@ export function DreamDeliveryMap() {
       }}
     >
       {/* Header section matching reference layout */}
-      <div style={{ marginBottom: 'clamp(1rem, 2vw, 1.5rem)' }}>
+      <div style={{ marginBottom: 'clamp(0.85rem, 2vw, 1.5rem)' }}>
         <div
           style={{
             fontFamily: 'var(--font-ui)',
@@ -201,10 +208,10 @@ export function DreamDeliveryMap() {
         <h2
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(1.7rem, 3.5vw, 2.6rem)',
+            fontSize: 'clamp(1.5rem, 3.5vw, 2.6rem)',
             fontWeight: 700,
             color: 'var(--body-text)',
-            margin: '0 0 6px',
+            margin: '0 0 4px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -215,7 +222,7 @@ export function DreamDeliveryMap() {
 
         <p
           style={{
-            fontSize: 'clamp(0.9rem, 1.6vw, 1.05rem)',
+            fontSize: 'clamp(0.88rem, 1.6vw, 1.05rem)',
             fontStyle: 'italic',
             color: 'var(--text-muted)',
             margin: 0,
@@ -232,7 +239,7 @@ export function DreamDeliveryMap() {
           position: 'relative',
           width: '100%',
           aspectRatio: '16 / 9',
-          borderRadius: 'clamp(1rem, 2vw, 1.5rem)',
+          borderRadius: 'clamp(0.85rem, 2vw, 1.5rem)',
           overflow: 'hidden',
           border: '2px solid var(--border-warm)',
           boxShadow: '0 16px 40px rgba(184, 115, 51, 0.12), 0 4px 12px rgba(0,0,0,0.06)',
@@ -332,10 +339,11 @@ export function DreamDeliveryMap() {
                 transform: 'translate(-50%, -50%)',
                 background: 'none',
                 border: 'none',
-                padding: 0,
+                padding: '4px',
                 cursor: 'pointer',
                 zIndex: isSelected ? 8 : 4,
                 outline: 'none',
+                touchAction: 'manipulation',
               }}
             >
               {/* Outer warm glow bloom */}
@@ -362,8 +370,8 @@ export function DreamDeliveryMap() {
               <div
                 style={{
                   position: 'relative',
-                  width: 'clamp(28px, 3.2vw, 36px)',
-                  height: 'clamp(36px, 4.2vw, 46px)',
+                  width: 'clamp(26px, 3.2vw, 36px)',
+                  height: 'clamp(34px, 4.2vw, 46px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -475,8 +483,8 @@ export function DreamDeliveryMap() {
             position: 'absolute',
             pointerEvents: 'none',
             zIndex: 9,
-            width: 'clamp(44px, 5.2vw, 68px)',
-            height: 'clamp(44px, 5.2vw, 68px)',
+            width: 'clamp(40px, 5.2vw, 68px)',
+            height: 'clamp(40px, 5.2vw, 68px)',
             transform: 'translate(-50%, -50%)',
           }}
         >
@@ -520,7 +528,7 @@ export function DreamDeliveryMap() {
           </div>
         </motion.div>
 
-        {/* Floating Story Card with Adaptive Docking (prevents covering Stop 5 and the castle) */}
+        {/* Desktop Floating Story Card with Adaptive Docking (prevents covering Stop 5 and the castle) */}
         <AnimatePresence mode="wait">
           {isCardVisible && (
             <motion.div
@@ -529,7 +537,7 @@ export function DreamDeliveryMap() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: isCardOnLeft ? -25 : 25, scale: 0.95 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="dream-floating-card"
+              className="dream-floating-card dream-floating-card-desktop"
               style={{
                 position: 'absolute',
                 top: 'clamp(12px, 3%, 22px)',
@@ -709,10 +717,11 @@ export function DreamDeliveryMap() {
           )}
         </AnimatePresence>
 
-        {/* Re-open card pill button if card was closed */}
+        {/* Desktop Re-open card pill button if card was closed */}
         {!isCardVisible && (
           <button
             onClick={() => setIsCardVisible(true)}
+            className="dream-desktop-reopen-btn"
             style={{
               position: 'absolute',
               top: '16px',
@@ -739,8 +748,9 @@ export function DreamDeliveryMap() {
           </button>
         )}
 
-        {/* Bottom Bar: Back to Projects & Auto Tour Toggle */}
+        {/* Desktop Bottom Bar: Back to Projects & Auto Tour Toggle */}
         <div
+          className="dream-map-controls-desktop"
           style={{
             position: 'absolute',
             bottom: 'clamp(10px, 2.5%, 18px)',
@@ -814,6 +824,221 @@ export function DreamDeliveryMap() {
         </div>
       </div>
 
+      {/* MOBILE-DEDICATED DOCK (Under the map on mobile screens for perfect readability and touch friendliness) */}
+      <div
+        className="dream-mobile-dock"
+        style={{
+          flexDirection: 'column',
+          gap: '12px',
+          marginTop: '12px',
+          width: '100%',
+        }}
+      >
+        {/* Horizontal Station Selector Chips */}
+        <div
+          className="dream-mobile-station-chips"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            overflowX: 'auto',
+            paddingBottom: '4px',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+          }}
+        >
+          {DREAM_STOPS.map((stop, index) => {
+            const isSelected = selectedStopIndex === index;
+            return (
+              <button
+                key={stop.id}
+                onClick={() => handleSelectStop(index)}
+                style={{
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: isSelected ? 'var(--vintage-berry)' : 'rgba(255, 252, 246, 0.9)',
+                  color: isSelected ? '#ffffff' : 'var(--body-text)',
+                  border: isSelected
+                    ? '1.5px solid rgba(251, 191, 36, 0.8)'
+                    : '1px solid var(--border-warm)',
+                  borderRadius: 'var(--radius-pill)',
+                  padding: '5px 10px',
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '0.74rem',
+                  fontWeight: isSelected ? 700 : 500,
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? '0 2px 8px rgba(163, 64, 99, 0.3)' : 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span>0{index + 1}</span>
+                <span>{stop.shortName}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mobile Dedicated Dream Story Card */}
+        <div
+          className="dream-floating-card-mobile"
+          style={{
+            width: '100%',
+            background: 'rgba(255, 252, 246, 0.95)',
+            border: '1.5px solid var(--border-warm)',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: '0 8px 24px rgba(50, 28, 38, 0.1)',
+            padding: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <img
+              src={currentStop.image}
+              alt={currentStop.title}
+              style={{
+                width: '84px',
+                height: '64px',
+                objectFit: 'cover',
+                borderRadius: 'var(--radius-sm)',
+                flexShrink: 0,
+                border: '1px solid var(--border-warm)',
+              }}
+            />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '0.68rem',
+                  color: 'var(--accent)',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '2px',
+                }}
+              >
+                Stop 0{selectedStopIndex + 1}
+              </div>
+              <h3
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  color: 'var(--body-text)',
+                  margin: '0 0 2px',
+                  lineHeight: 1.2,
+                }}
+              >
+                {currentStop.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: '0.78rem',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.4,
+                  margin: 0,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {currentStop.description}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setIsModalOpen(true);
+              if (soundEnabled) playChime(currentStop.chimeFreq);
+            }}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: 'var(--vintage-berry)',
+              color: '#fff',
+              fontFamily: 'var(--font-ui)',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              padding: '8px 14px',
+              borderRadius: 'var(--radius-pill)',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(163, 64, 99, 0.25)',
+            }}
+          >
+            <span>View Full Dream Lore</span>
+            <ArrowRight size={13} />
+          </button>
+        </div>
+
+        {/* Mobile Bottom Controls Bar */}
+        <div
+          className="dream-map-controls-mobile"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+          }}
+        >
+          <a
+            href="#work"
+            style={{
+              flex: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px',
+              background: 'rgba(255, 252, 246, 0.9)',
+              border: '1px solid var(--border-warm)',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-pill)',
+              fontFamily: 'var(--font-ui)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: 'var(--body-text)',
+              textDecoration: 'none',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+            }}
+          >
+            <ArrowLeft size={13} />
+            <span>Back to Projects</span>
+          </a>
+
+          <button
+            onClick={toggleTour}
+            style={{
+              flex: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px',
+              background: isTouring ? 'var(--vintage-berry)' : 'rgba(255, 252, 246, 0.9)',
+              color: isTouring ? '#ffffff' : 'var(--body-text)',
+              border: '1px solid var(--border-warm)',
+              padding: '7px 12px',
+              borderRadius: 'var(--radius-pill)',
+              fontFamily: 'var(--font-ui)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+            }}
+          >
+            {isTouring ? <Pause size={12} /> : <Play size={12} />}
+            <span>{isTouring ? 'Pause Tour' : 'Auto Tour ✦'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Expanded Dream Reader Modal */}
       <AnimatePresence>
         {isModalOpen && (
@@ -844,15 +1069,16 @@ export function DreamDeliveryMap() {
                 position: 'relative',
                 width: '100%',
                 maxWidth: '560px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
                 background: 'var(--surface-panel)',
                 border: '2px solid var(--border-warm)',
                 borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
                 boxShadow: '0 24px 60px rgba(0, 0, 0, 0.4)',
               }}
             >
               {/* Modal Banner Image */}
-              <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+              <div style={{ position: 'relative', width: '100%', height: 'clamp(140px, 30vw, 200px)' }}>
                 <img
                   src={currentStop.image}
                   alt={currentStop.title}
@@ -885,7 +1111,7 @@ export function DreamDeliveryMap() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: 'var(--sp-6)' }}>
+              <div style={{ padding: 'clamp(var(--sp-4), 3vw, var(--sp-6))' }}>
                 <div
                   style={{
                     fontFamily: 'var(--font-ui)',
@@ -904,7 +1130,7 @@ export function DreamDeliveryMap() {
                   id="dream-modal-title"
                   style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: '1.6rem',
+                    fontSize: 'clamp(1.3rem, 2.5vw, 1.6rem)',
                     color: 'var(--body-text)',
                     marginBottom: 'var(--sp-3)',
                   }}
@@ -914,7 +1140,7 @@ export function DreamDeliveryMap() {
 
                 <p
                   style={{
-                    fontSize: '0.96rem',
+                    fontSize: '0.94rem',
                     lineHeight: 1.7,
                     color: 'var(--text-muted)',
                     marginBottom: 'var(--sp-5)',
@@ -981,7 +1207,7 @@ export function DreamDeliveryMap() {
         )}
       </AnimatePresence>
 
-      {/* Scoped CSS Keyframes */}
+      {/* Scoped CSS Keyframes & Responsive Media Queries */}
       <style>{`
         @keyframes lantern-pulse {
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
@@ -1008,19 +1234,76 @@ export function DreamDeliveryMap() {
           transform: scale(1.28) !important;
         }
 
-        [data-theme='dream'] .dream-floating-card {
-          background: rgba(28, 18, 38, 0.88) !important;
+        /* Desktop specific */
+        @media (min-width: 769px) {
+          .dream-mobile-dock {
+            display: none !important;
+          }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+          .dream-map-viewport {
+            aspect-ratio: 16 / 11 !important;
+            min-height: 230px !important;
+            border-radius: var(--radius-md) !important;
+          }
+
+          .dream-floating-card-desktop {
+            display: none !important;
+          }
+
+          .dream-desktop-reopen-btn {
+            display: none !important;
+          }
+
+          .dream-map-controls-desktop {
+            display: none !important;
+          }
+
+          .dream-mobile-dock {
+            display: flex !important;
+          }
+
+          .map-lantern-pin {
+            padding: 8px !important;
+          }
+
+          .map-lantern-pin > div:nth-child(2) {
+            width: 24px !important;
+            height: 32px !important;
+          }
+        }
+
+        [data-theme='dream'] .dream-floating-card,
+        [data-theme='dream'] .dream-floating-card-mobile {
+          background: rgba(28, 18, 38, 0.92) !important;
           border-color: rgba(255, 255, 255, 0.18) !important;
           color: #fff8f1 !important;
-          box-shadow: 0 20px 45px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.15) !important;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.15) !important;
         }
 
-        [data-theme='dream'] .dream-floating-card h3 {
+        [data-theme='dream'] .dream-floating-card h3,
+        [data-theme='dream'] .dream-floating-card-mobile h3 {
           color: #fff8f1 !important;
         }
 
-        [data-theme='dream'] .dream-floating-card p {
+        [data-theme='dream'] .dream-floating-card p,
+        [data-theme='dream'] .dream-floating-card-mobile p {
           color: rgba(255, 248, 241, 0.8) !important;
+        }
+
+        [data-theme='dream'] .dream-mobile-station-chips button {
+          background: rgba(36, 22, 48, 0.85) !important;
+          border-color: rgba(255, 255, 255, 0.15) !important;
+          color: #fff8f1 !important;
+        }
+
+        [data-theme='dream'] .dream-map-controls-mobile a,
+        [data-theme='dream'] .dream-map-controls-mobile button {
+          background: rgba(36, 22, 48, 0.85) !important;
+          border-color: rgba(255, 255, 255, 0.15) !important;
+          color: #fff8f1 !important;
         }
       `}</style>
     </div>

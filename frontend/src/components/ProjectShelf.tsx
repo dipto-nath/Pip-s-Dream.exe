@@ -152,6 +152,7 @@ export function ProjectShelf({ chaosMode }: ProjectShelfProps) {
 
               {/* Project body */}
               <div
+                className="project-card-body"
                 style={{
                   padding: 'var(--sp-6)',
                   display: 'flex',
@@ -172,6 +173,7 @@ export function ProjectShelf({ chaosMode }: ProjectShelfProps) {
                 </p>
                 {/* Interactive component */}
                 <div
+                  className="project-card-component-box"
                   style={{
                     background: 'var(--surface)',
                     border: '1px dashed var(--border-warm)',
@@ -186,6 +188,18 @@ export function ProjectShelf({ chaosMode }: ProjectShelfProps) {
           ))}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .project-card-body {
+            padding: clamp(0.75rem, 3.5vw, 1.25rem) !important;
+            gap: var(--sp-3) !important;
+          }
+          .project-card-component-box {
+            padding: clamp(0.5rem, 2.5vw, 0.85rem) !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
