@@ -245,26 +245,6 @@ export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle }: S
         </div>
       </div>
 
-      {/* Marquee ticker */}
-      <div className="marquee-wrapper" aria-hidden="true">
-        <div className="marquee-track">
-          {Array.from({ length: 2 }, (_, copy) =>
-            [
-              '✦ DREAM DELIVERIES IN PROGRESS',
-              '★ LULLABIES SYNTHESIZED: 4,209',
-              '🌙 NIGHTLIGHTS CALIBRATED',
-              '⭐ PIP IS ON THE NIGHT SHIFT',
-              '✦ ALL ROOFTOPS OPERATIONAL',
-              '★ DREAM QUEUE: NOMINAL',
-              '🎵 MUSIC BOX: TUNED & READY',
-            ].map((text, i) => (
-              <span key={`${copy}-${i}`} style={{ whiteSpace: 'nowrap' }}>
-                {text}
-              </span>
-            ))
-          )}
-        </div>
-      </div>
     </header>
   );
 }
