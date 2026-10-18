@@ -3,6 +3,9 @@
 // Starts a real HTTP server, makes requests, verifies responses.
 // =============================================================
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import http from 'node:http';
 import { parse } from 'node:url';
 import { JsonStorage, hashSessionId } from './jsonStorage';
@@ -36,7 +39,8 @@ async function readBody(req: http.IncomingMessage): Promise<string> {
   });
 }
 
-const storage = new JsonStorage();
+const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pip-test-'));
+const storage = new JsonStorage(testDataDir);
 
 const server = http.createServer(async (req, res) => {
   const url = parse(req.url || '', true);
@@ -119,9 +123,6 @@ function httpRequest(path: string, method: string, body?: unknown): Promise<{ st
 }
 
 async function run() {
-  const fs = await import('node:fs/promises');
-  try { await fs.unlink('data/data.json'); } catch { /* ignore */ }
-
   await new Promise<void>((resolve) => server.listen(PORT, () => resolve()));
   console.log(`Server listening on port ${PORT}\n`);
 
@@ -214,12 +215,14 @@ async function run() {
   await check('404 for unknown route', notFound.status, 404);
 
   server.close(() => {
+    try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail > 0 ? 1 : 0);
   });
 }
 
 run().catch((err) => {
+  try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
   console.error('Test error:', err);
   process.exit(1);
 });

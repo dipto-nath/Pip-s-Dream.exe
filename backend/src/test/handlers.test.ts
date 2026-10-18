@@ -257,3 +257,26 @@ describe('handleGetStats', () => {
     expect(result.data?.total_visits).toBe(2);
   });
 });
+
+describe('JsonStorage', () => {
+  it('bounds stored guestbook entries to 200 items in newest-first order', async () => {
+    const fs = await import('node:fs');
+    const os = await import('node:os');
+    const path = await import('node:path');
+    const { JsonStorage } = await import('../jsonStorage');
+
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pip-json-test-'));
+    try {
+      const jsonStorage = new JsonStorage(tempDir);
+      for (let i = 1; i <= 205; i++) {
+        await jsonStorage.createEntry(`User${i}`, `Message ${i}`);
+      }
+      const entries = await jsonStorage.getEntries(300);
+      expect(entries).toHaveLength(200);
+      expect(entries[0].nickname).toBe('User205');
+      expect(entries[199].nickname).toBe('User6');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});

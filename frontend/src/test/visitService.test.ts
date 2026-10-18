@@ -3,7 +3,7 @@
 // Run with: npx vitest run src/test/visitService.test.ts
 // =============================================================
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fetchVisitorStats, recordVisit, getSessionId } from '../lib/visitService';
 
 function mockResponse(status: number, body: unknown) {
@@ -38,7 +38,7 @@ describe('getSessionId', () => {
 
   it('persists session ID in sessionStorage', () => {
     const id = getSessionId();
-    expect(sessionStorage.getItem('pip-exe-session')).toBe(id);
+    expect(sessionStorage.getItem('pip-exe-session-id')).toBe(id);
   });
 
   it('handles sessionStorage unavailable gracefully', () => {

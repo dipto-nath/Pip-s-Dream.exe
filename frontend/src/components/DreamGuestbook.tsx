@@ -47,7 +47,11 @@ export function DreamGuestbook() {
     let mounted = true;
     fetchGuestbookEntries().then((result) => {
       if (!mounted) return;
-      setEntries(result.entries);
+      setEntries((current) => {
+        const fetchedIds = new Set(result.entries.map((e) => e.id));
+        const localPending = current.filter((e) => !fetchedIds.has(e.id));
+        return [...localPending, ...result.entries];
+      });
       setBackendOnline(result.isOnline);
       setEntriesLoading(false);
     });
@@ -329,7 +333,7 @@ export function DreamGuestbook() {
                   )}
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={isSubmitting}>
+                <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={isSubmitting || entriesLoading}>
                   <Send size={14} />
                   {isSubmitting ? 'Pinning…' : 'Pin to the Board'}
                 </button>

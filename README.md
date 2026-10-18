@@ -26,8 +26,8 @@ Here you can:
 
 | Layer        | Choice                                      |
 |--------------|---------------------------------------------|
-| Build        | Vite 8                                       |
-| Framework    | React 19 (Strict Mode)                       |
+| Frontend     | Vite 8 · React 19 (Strict Mode)             |
+| Backend      | TypeScript (Node.js 20+ or Supabase Edge)     |
 | Language     | TypeScript (strict)                          |
 | Styling      | Native CSS (no Tailwind)                     |
 | Audio        | Web Audio API (oscillators, gain nodes)      |
@@ -36,7 +36,8 @@ Here you can:
 | Map          | Inline SVG with scroll-driven animation       |
 | Confetti     | canvas-confetti                              |
 | Icons        | Lucide React                                 |
-| Testing      | Vitest + React Testing Library               |
+| Backend Tests| Vitest (unit + HTTP integration)             |
+| Frontend Tests| Vitest + React Testing Library              |
 | Lint         | Oxlint                                       |
 
 **Fonts:** Fraunces (display), Fredoka (UI), Lora (story) — loaded via Google Fonts with `display=swap`.
@@ -54,21 +55,51 @@ Here you can:
 
 ```bash
 git clone <repository-url>
-cd pip-exe
-npm install
+cd "Pip's Dream.exe"
+
+# Frontend
+npm install --workspace=frontend
+
+# Backend (local development)
+npm install --workspace=backend
 ```
+
+> **Note:** This project uses a monorepo structure:
+> - `frontend/` — React + Vite app (Pip's Nursery)
+> - `backend/` — TypeScript API server (JSON storage or Supabase Edge Functions)
 
 ---
 
 ## Development Commands
 
+### Frontend
+
 ```bash
-npm run dev       # Start dev server at http://localhost:5173
-npm run build     # Production build (tsc + vite build)
-npm run preview   # Preview production build locally
-npm run test      # Run tests in watch mode
-npm run test:run  # Run tests once
-npm run lint      # Run oxlint
+npm run dev --workspace=frontend    # Start dev server at http://localhost:5173
+npm run build --workspace=frontend  # Production build
+npm run preview --workspace=frontend # Preview production build
+npm run test --workspace=frontend   # Run tests in watch mode
+npm run test:run --workspace=frontend # Run tests once
+npm run lint --workspace=frontend   # Run oxlint
+```
+
+### Backend
+
+```bash
+npm run dev --workspace=backend      # Start local server at http://localhost:3001
+npm run dev:once --workspace=backend # Start server once
+npm run build --workspace=backend    # Type-check (tsc)
+npm run test:run --workspace=backend # Run all backend tests (unit + HTTP)
+npm run lint --workspace=backend      # Run oxlint
+```
+
+### Quick Backend Test
+
+```bash
+npm run dev:once --workspace=backend &
+sleep 2
+npx tsx backend/src/testHttp.ts
+kill %1
 ```
 
 ---
@@ -120,25 +151,41 @@ Look closely at the hero -- there's a star that shouldn't be there. Click it to 
 
 ## Storage Behavior
 
-All persistent state is browser-local (`localStorage`/`sessionStorage`):
+The website uses a two-tier persistence model:
+
+### Visitor Counter
+
+The hit counter now tracks **global** visits via the backend API. Each browser session records one visit (idempotent — revisit in the same session doesn't double-count). The counter is shared across all visitors.
+
+When the backend is unavailable:
+- The counter shows a "Local Only" state with the last known session count
+- It clearly labels the data as local — it does **not** silently present a local number as the global total
+
+### Guestbook
+
+Guestbook entries are stored on the backend (JSON file locally, PostgreSQL in production). When the backend is reachable, entries are shared across all visitors. When the backend is unavailable, the guestbook falls back to `localStorage` and displays a clear "Offline mode" notice.
+
+### Browser-Local State
+
+These remain browser-local only (not shared):
 
 | Key                | Purpose                              |
 |--------------------|--------------------------------------|
 | `pip-theme`        | Day ('day') or Dream ('dream')       |
 | `pip-sound`        | Sound enabled (boolean)              |
 | `pip-chaos`        | Chaos Mode (boolean)                 |
-| `pip-exe-guestbook`| Guestbook entries (array)             |
-| `pip-exe-visits`   | Total visit count (number)           |
+| `pip-exe-guestbook`| Offline guestbook fallback (array)   |
+| `pip-exe-visits`   | Offline visit fallback (number)      |
 | `pip-exe-session`  | Session marker (prevents dupes)      |
-
-**The guestbook and hit counter are browser-local only.** They are not shared between visitors or devices. A small disclosure in the guestbook section explains this.
 
 ---
 
 ## Deployment
 
+### Frontend
+
 ```bash
-npm run build
+npm run build --workspace=frontend
 ```
 
 Produces a static `dist/` directory. Deploy to any static host:
@@ -147,6 +194,20 @@ Produces a static `dist/` directory. Deploy to any static host:
 - **Netlify:** drag `dist/` to the dashboard, or run `netlify deploy`
 - **GitHub Pages:** push `dist/` via the `gh-pages` branch
 
+### Backend (Supabase Edge Functions)
+
+See [`backend/README.md`](backend/README.md#deployment-to-supabase-edge-functions) for full instructions.
+
+```bash
+cd backend
+supabase functions deploy guestbook
+supabase functions deploy visits
+supabase functions deploy stats
+supabase functions deploy health
+```
+
+The frontend automatically uses the backend when `VITE_API_BASE_URL` is set. When it's not set or the backend is unreachable, the frontend gracefully falls back to local-only mode.
+
 The only build requirement is Node.js >= 20.
 
 ---
@@ -154,26 +215,51 @@ The only build requirement is Node.js >= 20.
 ## Project Structure
 
 ```
-pip-exe/
-├── public/
-│   └── assets/              # Official character artwork (PNG)
-│       ├── pip_avatar_cloud.png
-│       ├── pip_lullaby_box.png
-│       ├── pip_dream_lantern.png
-│       └── pip_portrait.png
-├── src/
-│   ├── App.tsx              # Root -- theme/chaos state, component composition
-│   ├── main.tsx             # React entry point (Strict Mode)
-│   ├── components/          # All UI components
-│   ├── context/             # SoundProvider + useSoundContext hook
-│   ├── hooks/               # usePersistentState, useReducedMotionPreference, useSound
-│   ├── lib/                 # Pure logic: audioEngine, guestbookStorage, visitCounter, dreamContent, types
-│   ├── styles/              # tokens.css, global.css, animations.css
-│   └── test/                # Vitest setup + unit tests
-├── index.html               # Theme flash-prevention script + font loading
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
+Pip's Dream.exe/
+├── README.md                    # Project documentation
+├── ASSETS.md                    # Asset credits
+├── .env.example                 # Environment variable template
+├── frontend/                    # React + Vite app (Pip's Nursery)
+│   ├── public/
+│   │   └── assets/              # Official character artwork (PNG)
+│   ├── src/
+│   │   ├── App.tsx              # Root — theme/chaos state, component composition
+│   │   ├── main.tsx             # React entry point (Strict Mode)
+│   │   ├── components/          # All UI components
+│   │   ├── context/             # SoundProvider + useSoundContext hook
+│   │   ├── hooks/               # usePersistentState, useReducedMotionPreference, useSound
+│   │   ├── lib/                 # Logic: audioEngine, api, guestbookService,
+│   │   │                        #   visitService, guestbookStorage, visitCounter,
+│   │   │                        #   dreamContent, types
+│   │   ├── styles/              # tokens.css, global.css, animations.css
+│   │   └── test/                # Vitest setup + unit tests
+│   ├── index.html               # Theme flash-prevention script + font loading
+│   ├── vite.config.ts           # Vite + proxy to backend (port 3001)
+│   ├── tsconfig.json
+│   ├── .env.example             # Frontend env vars
+│   └── package.json
+└── backend/                     # TypeScript API server
+    ├── src/
+    │   ├── types.ts             # Shared API types
+    │   ├── storage.ts           # Abstract storage interfaces
+    │   ├── jsonStorage.ts       # Local JSON file storage
+    │   ├── validation.ts        # Input validation + sanitisation
+    │   ├── handlers.ts          # Business logic (pure functions)
+    │   ├── server.ts            # HTTP server
+    │   ├── testSmoke.ts         # Direct handler smoke test
+    │   ├── testHttp.ts          # HTTP integration test
+    │   └── test/                # Vitest unit tests
+    ├── functions/               # Supabase Edge Functions
+    │   ├── guestbook/index.ts
+    │   ├── visits/index.ts
+    │   ├── stats/index.ts
+    │   └── health/index.ts
+    ├── migrations/              # SQL migrations
+    │   └── 001_initial_schema.sql
+    ├── data/                    # Local JSON data (gitignored)
+    ├── tsconfig.json
+    ├── .env.example             # Backend env vars
+    └── package.json
 ```
 
 ---
@@ -186,7 +272,8 @@ Pip and all character assets are provided by [haX.baby's Baby's First Website](h
 
 ## Known Limitations
 
-- The guestbook is stored in `localStorage` -- entries persist only in the current browser.
-- The hit counter is browser-local only.
+- When the backend is unavailable, the guestbook falls back to `localStorage` — entries are local-only and will sync to the server on next online submission.
+- When the backend is unavailable, the visitor counter shows a "Local Only" state with the session count — it does **not** display a misleading global number.
 - The sparkle cursor trail is disabled on touch-only devices and when `prefers-reduced-motion` is set.
-- All audio is synthesized client-side -- no network requests for audio.
+- All audio is synthesized client-side — no network requests for audio.
+- The local backend (JSON storage) is single-process; for multi-process scenarios, use Supabase.

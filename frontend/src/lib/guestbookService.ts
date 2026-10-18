@@ -11,7 +11,7 @@ import { loadEntries, saveEntries, createEntry as createLocalEntry, GUESTBOOK_LI
 export { GUESTBOOK_LIMITS, type GuestbookEntry };
 
 export interface GuestbookError {
-  type: 'network' | 'validation' | 'server' | 'rate_limit';
+  type: 'network' | 'validation' | 'server' | 'rate_limit' | 'retry';
   message: string;
 }
 
@@ -140,31 +140,44 @@ export async function submitGuestbookEntry(
     };
   }
 
-  // Network/server error — fall back to localStorage
-  backendOnline = false;
-  lastOnlineCheck = Date.now();
-  const localEntry = createLocalEntry(trimName, trimMsg);
-  if (localEntry) {
-    // Save to localStorage as a fallback
-    const existing = loadEntries();
-    const next = [localEntry, ...existing].slice(0, GUESTBOOK_LIMITS.maxEntries);
-    const saved = saveEntries(next);
-    if (!saved) {
+  // Timeout or server error — return retry error without offline fallback
+  if (result.status === 408 || (result.status !== undefined && result.status >= 500 && result.status < 600)) {
+    return {
+      success: false,
+      error: {
+        type: 'retry',
+        message: result.error ?? 'The dream mailbox is sleepy. Please try again in a moment.',
+      },
+    };
+  }
+
+  // Network unreachable — fall back to localStorage
+  if (result.status === 0) {
+    backendOnline = false;
+    lastOnlineCheck = Date.now();
+    const localEntry = createLocalEntry(trimName, trimMsg);
+    if (localEntry) {
+      // Save to localStorage as a fallback
+      const existing = loadEntries();
+      const next = [localEntry, ...existing].slice(0, GUESTBOOK_LIMITS.maxEntries);
+      const saved = saveEntries(next);
+      if (!saved) {
+        return {
+          success: false,
+          error: { type: 'server', message: 'Could not save your message right now.' },
+        };
+      }
       return {
-        success: false,
-        error: { type: 'server', message: 'Could not save your message right now.' },
+        success: true,
+        entry: localEntry,
+        isLocalFallback: true,
       };
     }
-    return {
-      success: true,
-      entry: localEntry,
-      isLocalFallback: true,
-    };
   }
 
   return {
     success: false,
-    error: { type: 'server', message: 'Could not save your message. Please try again.' },
+    error: { type: 'server', message: result.error ?? 'Could not save your message. Please try again.' },
   };
 }
 

@@ -110,6 +110,9 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
       };
       // Prepend (newest first)
       data.guestbook_entries.unshift(entry);
+      if (data.guestbook_entries.length > 200) {
+        data.guestbook_entries = data.guestbook_entries.slice(0, 200);
+      }
       await this.writeData(data);
       return entry;
     });

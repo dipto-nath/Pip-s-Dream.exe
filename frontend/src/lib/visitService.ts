@@ -8,7 +8,7 @@
 import { apiRequest } from './api';
 import { formatCount, getVisitCount } from './visitCounter';
 
-const SESSION_KEY = 'pip-exe-session';
+const SESSION_KEY = 'pip-exe-session-id';
 
 /** Generate or retrieve a session ID for this browser session. */
 function getSessionId(): string {

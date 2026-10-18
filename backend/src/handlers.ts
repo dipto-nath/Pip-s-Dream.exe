@@ -28,7 +28,7 @@ export async function handleGetGuestbook(
   try {
     const entries = await storage.getEntries(Math.min(limit, MAX_ENTRIES));
     return { success: true, data: { entries } };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       error: 'Pip is having trouble reading the dream mailbox.',
@@ -75,7 +75,7 @@ export async function handleCreateGuestbook(
   try {
     const entry = await storage.createEntry(sanitized.nickname, sanitized.message);
     return { success: true, data: entry, status: 201 };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       error: 'The dream mailbox is sleepy. Your note hasn\'t been posted yet.',
@@ -109,7 +109,7 @@ export async function handleRecordVisit(
     const result = await storage.recordVisit(sessionHash);
     await storage.getStats(); // warm up — not needed but harmless
     return { success: true, data: result, status: 200 };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       error: 'Could not record your visit right now.',

@@ -3,7 +3,7 @@
 // Run with: npx vitest run src/test/guestbookService.test.ts
 // =============================================================
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   fetchGuestbookEntries,
   submitGuestbookEntry,
@@ -178,7 +178,7 @@ describe('submitGuestbookEntry — offline fallback', () => {
     expect(stored[0].name).toBe('Pip');
   });
 
-  it('saves to localStorage when API returns 500', async () => {
+  it('returns retry error when API returns 500', async () => {
     mockFetch(500, {
       success: false,
       error: 'Server error',
@@ -186,9 +186,24 @@ describe('submitGuestbookEntry — offline fallback', () => {
 
     const result = await submitGuestbookEntry('Pip', 'Hello');
 
-    expect(result.success).toBe(true);
-    expect(result.isLocalFallback).toBe(true);
-    expect(result.error).toBeUndefined();
+    expect(result.success).toBe(false);
+    expect(result.error?.type).toBe('retry');
+    expect(result.isLocalFallback).toBeUndefined();
+    expect(localStorage.getItem('pip-exe-guestbook')).toBeNull();
+  });
+
+  it('returns retry error when request times out with 408', async () => {
+    mockFetch(408, {
+      success: false,
+      error: 'Request timed out.',
+    });
+
+    const result = await submitGuestbookEntry('Pip', 'Hello');
+
+    expect(result.success).toBe(false);
+    expect(result.error?.type).toBe('retry');
+    expect(result.isLocalFallback).toBeUndefined();
+    expect(localStorage.getItem('pip-exe-guestbook')).toBeNull();
   });
 });
 
