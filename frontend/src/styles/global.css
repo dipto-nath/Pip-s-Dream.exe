@@ -1,6 +1,7 @@
 /* =============================================================
    PIP.EXE — GLOBAL CSS RESET & BASE STYLES
    ============================================================= */
+@import "tailwindcss";
 @import './tokens.css';
 @import './animations.css';
 

@@ -1,189 +1,42 @@
 // =============================================================
 // PIP.EXE — OriginStoryboard
-// Interactive vertically-unfolding story with scene progress
+// How Pip Began: Horizontal scrub timeline powered by GSAP & SplitText
 // =============================================================
 
-import { useState, useEffect, useRef, Fragment } from 'react';
-import { motion } from 'framer-motion';
-import { STORY_SCENES } from '../lib/dreamContent';
-import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import Timeline from '@/components/ui/timeline';
 
 export function OriginStoryboard() {
-  const [activeScene, setActiveScene] = useState(0);
-  const prefersReduced = useReducedMotionPreference();
-  const sceneRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-
-    sceneRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveScene(i);
-          }
-        },
-        { threshold: 0.5 },
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-
-    return () => {
-      observers.forEach((obs) => obs.disconnect());
-    };
-  }, []);
-
   return (
-    <section
-      id="story"
-      aria-labelledby="story-heading"
-      style={{
-        padding: 'clamp(3rem, 5vw, 5rem) 0',
-        background: 'var(--surface-muted)',
-      }}
-    >
-      <div className="container">
-        <div style={{ marginBottom: 'clamp(2rem, 4vw, 4rem)' }}>
-          <span className="section-eyebrow">Origin Story · Five Chapters</span>
-          <h2 id="story-heading" style={{ fontStyle: 'italic' }}>
-            How Pip Began
-          </h2>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '80px 1fr',
-            gap: 'clamp(3rem, 6vw, 6rem) var(--sp-8)',
-            position: 'relative',
-          }}
-          className="story-grid"
-        >
-          {/* Progress rail line extending through the full story */}
-          <div
-            aria-hidden="true"
-            style={{
-              gridColumn: 1,
-              gridRow: `1 / ${STORY_SCENES.length + 1}`,
-              width: 2,
-              justifySelf: 'center',
-              background: `linear-gradient(to bottom, var(--accent), var(--amber))`,
-              opacity: 0.3,
-            }}
-          />
-
-          {STORY_SCENES.map((scene, i) => (
-            <Fragment key={scene.id}>
-              {/* Progress marker in column 1 */}
-              <div
-                aria-hidden="true"
-                style={{
-                  gridColumn: 1,
-                  gridRow: i + 1,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  paddingTop: 'var(--sp-6)',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: '50%',
-                    background: i === activeScene
-                      ? 'var(--accent)'
-                      : i < activeScene
-                        ? 'var(--amber)'
-                        : 'var(--surface-inset)',
-                    border: `2px solid ${i <= activeScene ? 'var(--accent)' : 'var(--border-warm)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.1rem',
-                    transition: 'background 0.4s, border-color 0.4s',
-                    boxShadow: i === activeScene
-                      ? '0 0 12px rgba(163,64,99,0.4)'
-                      : 'none',
-                    position: 'relative',
-                  }}
-                >
-                  {scene.icon}
-                </div>
-              </div>
-
-              {/* Scene card in column 2 */}
-              <motion.div
-                ref={(el) => { sceneRefs.current[i] = el; }}
-                initial={prefersReduced ? false : { opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, delay: 0.05 }}
-                style={{
-                  gridColumn: 2,
-                  gridRow: i + 1,
-                  background: i === activeScene
-                    ? 'var(--surface-panel)'
-                    : 'var(--surface)',
-                  border: `2px solid ${i === activeScene ? 'var(--accent)' : 'var(--border-warm)'}`,
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 'var(--sp-6)',
-                  transition: 'border-color 0.4s, background 0.4s, box-shadow 0.4s',
-                  boxShadow: i === activeScene
-                    ? '0 4px 24px rgba(163,64,99,0.12), 3px 3px 0 var(--shadow-warm)'
-                    : '2px 2px 0 var(--shadow-warm)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    color: 'var(--accent)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    marginBottom: 'var(--sp-2)',
-                  }}
-                >
-                  Chapter {String(scene.chapter).padStart(2, '0')}
-                </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)',
-                    marginBottom: 'var(--sp-4)',
-                    color: i === activeScene ? 'var(--accent)' : 'var(--body-text)',
-                    transition: 'color 0.4s',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  {scene.title}
-                </h3>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-story)',
-                    fontSize: 'clamp(0.9rem, 1.6vw, 1rem)',
-                    color: 'var(--body-text)',
-                    lineHeight: 1.8,
-                    maxWidth: '68ch',
-                  }}
-                >
-                  {scene.body}
-                </p>
-              </motion.div>
-            </Fragment>
-          ))}
+    <div id="story" className="relative w-full overflow-hidden bg-[var(--surface-muted)]">
+      {/* Lead-in banner so the timeline pin has comfortable entry scroll space */}
+      <div className="pt-16 pb-8 px-6 text-center max-w-4xl mx-auto flex flex-col items-center gap-3">
+        <span className="section-eyebrow">
+          Origin Story · Five Chapters
+        </span>
+        <h2 className="text-4xl md:text-5xl font-serif font-bold italic tracking-tight text-[var(--body-text)]">
+          How Pip Began
+        </h2>
+        <p className="max-w-xl text-sm md:text-base text-[var(--text-muted)] font-story leading-relaxed">
+          From a fallen star in a porcelain teacup to chimney delivery routes over quiet towns.
+          Scroll down — the nursery pins and slides through Pip&apos;s story.
+        </p>
+        <div className="flex items-center gap-2 mt-2 text-xs font-mono uppercase tracking-widest text-[var(--accent)] animate-bounce">
+          <span>↓ Scroll to explore chronicle</span>
         </div>
       </div>
 
-      <style>{`
-        @media (max-width: 480px) {
-          .story-grid { grid-template-columns: 44px 1fr !important; gap: clamp(2rem, 5vw, 4rem) 1rem !important; }
-        }
-      `}</style>
-    </section>
+      {/* GSAP Horizontal Scroll Pin Timeline */}
+      <Timeline
+        title="How Pip Began"
+        periodLabel="Origin Story · Five Chapters"
+        imageUrl="/assets/pip_portrait.png"
+        imageAlt="Pip peering from the Midnight Nursery window"
+        textColor="var(--body-text)"
+        mutedTextColor="var(--text-muted)"
+        activeColor="var(--accent)"
+        backgroundColor="var(--surface-muted)"
+        duration={1.2}
+      />
+    </div>
   );
 }
