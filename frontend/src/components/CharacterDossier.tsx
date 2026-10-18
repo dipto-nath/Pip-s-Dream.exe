@@ -4,7 +4,9 @@
 // =============================================================
 
 import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import { useVisitorMemory } from '../hooks/useVisitorMemory';
 
 const DOSSIER_ITEMS = [
   { label: 'Full Name',   value: 'Pip' },
@@ -25,6 +27,7 @@ interface CharacterDossierProps {
 
 export function CharacterDossier({ chaosMode }: CharacterDossierProps) {
   const prefersReduced = useReducedMotionPreference();
+  const { profile, isReturningVisitor } = useVisitorMemory();
 
   return (
     <section
@@ -148,6 +151,114 @@ export function CharacterDossier({ chaosMode }: CharacterDossierProps) {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Visitor Memory — Your Dream Record */}
+            <div
+              style={{
+                background: 'rgba(255, 252, 246, 0.85)',
+                border: '1.5px dashed var(--border-warm)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--sp-4)',
+                boxShadow: '2px 2px 0 var(--shadow-warm)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 'var(--sp-3)',
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Sparkles size={13} />
+                  VISITOR MEMORY · YOUR DREAM RECORD
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.68rem',
+                    fontWeight: 600,
+                    background: 'var(--surface-panel)',
+                    padding: '2px 8px',
+                    borderRadius: 'var(--radius-pill)',
+                    border: '1px solid var(--border-warm)',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {isReturningVisitor ? '✦ Returning Friend' : '✦ First Visit'}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 'var(--sp-2)',
+                  textAlign: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    background: 'var(--surface-panel)',
+                    padding: '6px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-warm)',
+                  }}
+                >
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
+                    Dreamer
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 600, color: 'var(--body-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {profile?.name || 'Friend'}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: 'var(--surface-panel)',
+                    padding: '6px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-warm)',
+                  }}
+                >
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
+                    Nights Visited
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent)' }}>
+                    {profile?.visitCount ?? 1}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: 'var(--surface-panel)',
+                    padding: '6px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-warm)',
+                  }}
+                >
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
+                    Favorite Lamp
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 600, color: 'var(--body-text)', textTransform: 'capitalize' }}>
+                    {profile?.favoritePreset || 'Moonbeam'}
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 

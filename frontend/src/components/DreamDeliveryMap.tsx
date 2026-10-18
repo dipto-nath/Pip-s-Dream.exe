@@ -117,6 +117,7 @@ export function DreamDeliveryMap() {
   const [isCardVisible, setIsCardVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTouring, setIsTouring] = useState(false);
+  const [manualSide, setManualSide] = useState<'auto' | 'left' | 'right'>('auto');
   const tourTimerRef = useRef<number | null>(null);
 
   const prefersReduced = useReducedMotionPreference();
@@ -124,11 +125,14 @@ export function DreamDeliveryMap() {
   const { playChime } = useSound(soundEnabled);
 
   const currentStop = DREAM_STOPS[selectedStopIndex];
+  // Dynamically dock card on the left when stop is on the right (like Stop 5 castle) so no lantern is hidden
+  const isCardOnLeft = manualSide === 'auto' ? currentStop.x > 50 : manualSide === 'left';
 
   // Handle selecting a lantern
   const handleSelectStop = (index: number) => {
     setSelectedStopIndex(index);
     setIsCardVisible(true);
+    setManualSide('auto'); // auto-dodge to opposite side of selected lantern
     const stop = DREAM_STOPS[index];
     if (soundEnabled) {
       playChime(stop.chimeFreq);
@@ -516,22 +520,23 @@ export function DreamDeliveryMap() {
           </div>
         </motion.div>
 
-        {/* Floating Story Card on Right Side */}
+        {/* Floating Story Card with Adaptive Docking (prevents covering Stop 5 and the castle) */}
         <AnimatePresence mode="wait">
           {isCardVisible && (
             <motion.div
-              key={currentStop.id}
-              initial={{ opacity: 0, x: 25, scale: 0.95 }}
+              key={`${currentStop.id}-${isCardOnLeft ? 'left' : 'right'}`}
+              initial={{ opacity: 0, x: isCardOnLeft ? -25 : 25, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 25, scale: 0.95 }}
+              exit={{ opacity: 0, x: isCardOnLeft ? -25 : 25, scale: 0.95 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
               className="dream-floating-card"
               style={{
                 position: 'absolute',
                 top: 'clamp(12px, 3%, 22px)',
-                right: 'clamp(12px, 3%, 24px)',
+                left: isCardOnLeft ? 'clamp(12px, 3%, 24px)' : 'auto',
+                right: isCardOnLeft ? 'auto' : 'clamp(12px, 3%, 24px)',
                 width: 'clamp(240px, 28vw, 320px)',
-                background: 'rgba(255, 252, 246, 0.92)',
+                background: 'rgba(255, 252, 246, 0.94)',
                 backdropFilter: 'blur(16px) saturate(160%)',
                 WebkitBackdropFilter: 'blur(16px) saturate(160%)',
                 border: '1.5px solid rgba(255, 255, 255, 0.95)',
@@ -545,7 +550,7 @@ export function DreamDeliveryMap() {
                 gap: 'clamp(8px, 1vw, 12px)',
               }}
             >
-              {/* Card Header Thumbnail with Close Button */}
+              {/* Card Header Thumbnail with Close & Dock Flip Buttons */}
               <div
                 style={{
                   position: 'relative',
@@ -566,6 +571,41 @@ export function DreamDeliveryMap() {
                     objectFit: 'cover',
                   }}
                 />
+
+                {/* Flip Dock Side Button */}
+                <button
+                  onClick={() => setManualSide(isCardOnLeft ? 'right' : 'left')}
+                  title={`Move card to ${isCardOnLeft ? 'right' : 'left'} side`}
+                  aria-label="Dock card on other side"
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '38px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: 'rgba(20, 14, 24, 0.65)',
+                    backdropFilter: 'blur(4px)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.72rem',
+                    transition: 'transform 0.18s, background 0.18s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.9)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.65)';
+                  }}
+                >
+                  ⇄
+                </button>
 
                 {/* Close Button in top right */}
                 <button
@@ -676,7 +716,8 @@ export function DreamDeliveryMap() {
             style={{
               position: 'absolute',
               top: '16px',
-              right: '16px',
+              left: isCardOnLeft ? '16px' : 'auto',
+              right: isCardOnLeft ? 'auto' : '16px',
               background: 'rgba(255, 252, 246, 0.9)',
               backdropFilter: 'blur(8px)',
               border: '1px solid rgba(255,255,255,0.8)',
@@ -703,11 +744,13 @@ export function DreamDeliveryMap() {
           style={{
             position: 'absolute',
             bottom: 'clamp(10px, 2.5%, 18px)',
-            left: 'clamp(10px, 2.5%, 18px)',
+            left: isCardOnLeft ? 'auto' : 'clamp(10px, 2.5%, 18px)',
+            right: isCardOnLeft ? 'clamp(10px, 2.5%, 18px)' : 'auto',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             zIndex: 10,
+            transition: 'left 0.35s ease, right 0.35s ease',
           }}
         >
           {/* Back to Projects button matching reference */}
