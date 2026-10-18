@@ -1,4 +1,4 @@
-// Built using Hyperiux Vault & Adapted for Pip's Dream
+// Built using Hyperiux Vault: https://vault.hyperiux.com & Refined for Pip's Dream
 "use client";
 
 import {
@@ -14,7 +14,11 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-/* Stand-in for @gsap/react's useGSAP. Safely creates and reverts gsap.context */
+/* Inline stand-in for @gsap/react's useGSAP. Mirrors its default
+   `revertOnUpdate: false`: one gsap.context lives for the component's
+   lifetime, the callback is re-added when dependencies change, and the
+   context is reverted only on unmount. A callback may return its own
+   cleanup, which runs before the next re-add and on unmount. */
 function useGSAP(
   callback: () => void | (() => void),
   options?: {
@@ -66,16 +70,13 @@ const monthOrder = {
   December: 12,
 } as const;
 
-export type Month = keyof typeof monthOrder;
+type Month = keyof typeof monthOrder;
 
 export type JourneyItem = {
   id: string;
   year: string;
   month: Month;
   content: string;
-  chapterTitle?: string;
-  badge?: string;
-  position?: "top" | "bottom";
 };
 
 export type TimelineProps = {
@@ -87,7 +88,6 @@ export type TimelineProps = {
   backgroundColor?: string;
   imageUrl?: string;
   imageAlt?: string;
-  items?: JourneyItem[];
   duration?: number;
   scrollDuration?: number;
 };
@@ -117,78 +117,79 @@ function usePrefersReducedMotion() {
   return useSyncExternalStore(
     subscribeToReducedMotion,
     getReducedMotionSnapshot,
-    getServerReducedMotionSnapshot,
+    getServerReducedMotionSnapshot
   );
 }
 
-// All 5 Pip Origin Story Chapters in alternating top/bottom order
-const defaultStoryItems: JourneyItem[] = [
+const allJourneyItems: JourneyItem[] = [
   {
-    id: "pip-ch1",
-    year: "Chapter 01",
+    id: "2020-march",
+    year: "2020",
     month: "March",
-    chapterTitle: "The Little Star",
-    badge: "⭐",
-    position: "top",
     content:
-      "One sleepy evening, a small fallen star drifted through an open window and landed inside a porcelain teacup. By morning, its soft warmth became the quiet starlight living in Pip's eyes.",
+      "A small fallen star drifts into a porcelain teacup at the Midnight Nursery. Soft starlight wakes in Pip's eyes.",
   },
   {
-    id: "pip-ch2",
-    year: "Chapter 02",
+    id: "2020-november",
+    year: "2020",
     month: "November",
-    chapterTitle: "The Quiet Little Problem",
-    badge: "🌙",
-    position: "bottom",
     content:
-      "The neighborhood creatures were having restless nights. Their dreams came out repetitive and grey — the same three clouds, the same fence. Pip decided something had to be done.",
+      "The neighborhood creatures have restless nights with grey, repetitive dreams. Pip decides something must be done.",
   },
   {
-    id: "pip-ch3",
-    year: "Chapter 03",
+    id: "2021-july",
+    year: "2021",
     month: "July",
-    chapterTitle: "The First Invention",
-    badge: "🎵",
-    position: "top",
     content:
-      "With a borrowed music box, bits of moonlight, a dented thimble, and extraordinary trial and error, Pip tuned the very first dream instrument. The neighborhood grew peacefully quiet.",
+      "With a borrowed music box and moonlight, Pip tunes the very first lullaby instrument for quiet nights.",
   },
   {
-    id: "pip-ch4",
-    year: "Chapter 04",
+    id: "2022-october",
+    year: "2022",
+    month: "October",
+    content:
+      "One note wobbles off-key in the middle, yet the neighborhood grows beautifully, deeply, peacefully quiet.",
+  },
+  {
+    id: "2023-april",
+    year: "2023",
+    month: "April",
+    content:
+      "Pip maps rooftop routes from chimney to chimney, delivering cloud castles and talking teacups into sleeping homes.",
+  },
+  {
+    id: "2025-september",
+    year: "2025",
     month: "September",
-    chapterTitle: "Rooftop Delivery School",
-    badge: "🏠",
-    position: "bottom",
     content:
-      "Pip drew chimney routes on nursery paper, delivering custom bedtime adventures: cloud castles for the restless, quiet seas for the anxious, and talking teacups for the lonely.",
+      "Hand-tuned lanterns and star-path compasses make Pip's dream delivery routes ready for every roof.",
   },
   {
-    id: "pip-ch5",
-    year: "Chapter 05",
-    month: "December",
-    chapterTitle: "The Next Little Dream",
-    badge: "💻",
-    position: "top",
+    id: "2026-may",
+    year: "2026",
+    month: "May",
     content:
-      "The old nursery computer remains awake long after midnight. Every visitor brings a new bedtime possibility, with hidden notes waiting for curious dreamers who explore.",
+      "The nursery computer stays awake past midnight, leaving bedtime notes for curious visitors who explore.",
   },
 ];
 
 export default function Timeline({
   title = "How Pip Began",
   periodLabel = "Origin Story · Five Chapters",
-  textColor = "var(--body-text, #261b23)",
-  activeColor = "var(--accent, #e25555)",
-  backgroundColor = "var(--surface-muted, #f7f1e8)",
+  textColor = "var(--body-text, #3a2418)",
+  mutedTextColor = "var(--text-muted, #7a5845)",
+  activeColor = "var(--accent, #a34063)",
+  backgroundColor = "var(--surface-muted, #fdf0e4)",
   imageUrl = "/assets/pip_cloud_star.jpg",
   imageAlt = "Pip riding a cloud in the starlight sky with a unicorn plushie",
-  items = defaultStoryItems,
+  duration,
+  scrollDuration = 1.2,
 }: TimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const progressBarRef = useRef<HTMLDivElement>(null);
+  const wholeSliderRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const animationDuration = duration ?? scrollDuration;
+  const normalizedDuration = Math.max(0.2, animationDuration);
 
   const sectionStyle: CSSProperties = {
     color: textColor,
@@ -197,114 +198,142 @@ export default function Timeline({
   const activeStyle: CSSProperties = {
     backgroundColor: activeColor,
   };
+  const mutedTextStyle: CSSProperties = {
+    color: mutedTextColor,
+  };
 
   useGSAP(() => {
     const section = sectionRef.current;
-    const slider = sliderRef.current;
+    const slider = wholeSliderRef.current;
     if (!section || !slider) return;
 
-    if (reducedMotion) {
-      // Accessible static state
-      gsap.set(".journey-line-progress", { width: "100%" });
-      gsap.set(".stem-line", { scaleY: 1 });
-      gsap.set(".stem-dot", { scale: 1 });
-      gsap.set(".chapter-card-inner", { opacity: 1 });
-      return;
-    }
-
-    // Calculate total horizontal travel
-    const getTravelDistance = () => {
-      return Math.max(600, slider.scrollWidth - window.innerWidth + 200);
+    const maxScroll = () => {
+      const isMobile = window.innerWidth < 768;
+      const rightPadding = isMobile ? 80 : 180;
+      return -(slider.scrollWidth - window.innerWidth + rightPadding);
     };
 
-    const travelDistance = getTravelDistance();
-
-    // Horizontal track pinning tween
-    const horizontalTween = gsap.to(slider, {
-      x: () => -getTravelDistance(),
-      ease: "none",
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        pin: true,
         start: "top top",
-        end: () => `+=${travelDistance * 1.2}`,
-        scrub: 1,
+        end: "88% bottom",
+        scrub: true,
         invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          if (progressBarRef.current) {
-            progressBarRef.current.style.width = `${Math.min(100, Math.max(10, self.progress * 100))}%`;
-          }
-        },
+      },
+      defaults: {
+        ease: "none",
       },
     });
 
-    // Animate each milestone 1-by-1 as it enters the reading focus zone
-    const milestoneElements = section.querySelectorAll<HTMLElement>(".timeline-milestone");
+    tl.to(slider, {
+      x: maxScroll,
+      ease: "none",
+    });
 
-    milestoneElements.forEach((milestone, idx) => {
-      const card = milestone.querySelector<HTMLElement>(".chapter-card-inner");
-      const stem = milestone.querySelector<HTMLElement>(".stem-line");
-      const dot = milestone.querySelector<HTMLElement>(".stem-dot");
+    if (reducedMotion) {
+      gsap.set(".journey-line", { width: "100%" });
+      allJourneyItems.forEach((item) => {
+        gsap.set(`.jl-${item.id}`, { scaleY: 1 });
+        gsap.set(`.jd-${item.id}`, { scale: 1 });
+        gsap.set(`.title-${item.id}`, { opacity: 1, y: 0 });
+        gsap.set(`.desc-${item.id}`, { opacity: 1, y: 0 });
+      });
+      return;
+    }
 
-      // Chapter 1 starts near the center, so it is active immediately
-      const isFirst = idx === 0;
+    gsap.to(".journey-line", {
+      width: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: section,
+        start: "top top",
+        end: "88% bottom",
+        scrub: true,
+      },
+    });
 
-      if (isFirst) {
-        if (card) gsap.set(card, { opacity: 1, scale: 1 });
-        if (stem) gsap.set(stem, { scaleY: 1 });
-        if (dot) gsap.set(dot, { scale: 1.25 });
-      } else {
-        if (card) gsap.set(card, { opacity: 0.28, scale: 0.94 });
-        if (stem) gsap.set(stem, { scaleY: 0.2 });
-        if (dot) gsap.set(dot, { scale: 0.5 });
-      }
+    // Set initial GSAP states
+    allJourneyItems.forEach((item, index) => {
+      const isTop = index % 2 === 0;
+      gsap.set(`.jl-${item.id}`, {
+        scaleY: 0,
+        transformOrigin: isTop ? "bottom center" : "top center",
+      });
+      gsap.set(`.jd-${item.id}`, {
+        scale: 0,
+        transformOrigin: "center center",
+      });
+      gsap.set(`.title-${item.id}`, {
+        opacity: 0,
+        y: isTop ? 14 : -14,
+      });
+      gsap.set(`.desc-${item.id}`, {
+        opacity: 0,
+        y: isTop ? 14 : -14,
+      });
+    });
 
-      // 1-by-1 reflection trigger as this milestone scrolls into center
-      if (card) {
-        gsap.to(card, {
-          opacity: 1,
-          scale: 1,
-          boxShadow: "0 10px 32px rgba(226, 85, 85, 0.25), 3px 3px 0 var(--shadow-warm)",
-          borderColor: "var(--accent)",
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: milestone,
-            containerAnimation: horizontalTween,
-            start: "left 80%",
-            end: "left 48%",
-            scrub: true,
-          },
-        });
-      }
+    // Staggered reveal for milestones 1 by 1
+    // Timed so 2026 May completes revealing at ~83%,
+    // the entire timeline rests completely finished from 88% to 100% (~12% buffer)
+    // allowing the user to comfortably view the whole timeline before it transitions downward.
+    const positions: ReadonlyArray<readonly [number, number]> = [
+      [5, 16],
+      [16, 27],
+      [27, 38],
+      [38, 49],
+      [49, 60],
+      [60, 71],
+      [71, 83],
+    ];
 
-      if (stem) {
-        gsap.to(stem, {
+    allJourneyItems.forEach((item, index) => {
+      const [startPercent, endPercent] = positions[index];
+      const itemTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: `${startPercent}% top`,
+          end: `${endPercent}% top`,
+          scrub: true,
+        },
+      });
+
+      itemTl
+        .to(`.jl-${item.id}`, {
           scaleY: 1,
+          duration: normalizedDuration * 0.4,
           ease: "power2.out",
-          scrollTrigger: {
-            trigger: milestone,
-            containerAnimation: horizontalTween,
-            start: "left 85%",
-            end: "left 52%",
-            scrub: true,
+        })
+        .to(
+          `.jd-${item.id}`,
+          {
+            scale: 1,
+            duration: normalizedDuration * 0.4,
+            ease: "back.out(2)",
           },
-        });
-      }
-
-      if (dot) {
-        gsap.to(dot, {
-          scale: 1.3,
-          backgroundColor: "var(--accent)",
-          ease: "back.out(2)",
-          scrollTrigger: {
-            trigger: milestone,
-            containerAnimation: horizontalTween,
-            start: "left 85%",
-            end: "left 52%",
-            scrub: true,
+          "<"
+        )
+        .to(
+          `.title-${item.id}`,
+          {
+            opacity: 1,
+            y: 0,
+            duration: normalizedDuration * 0.5,
+            ease: "power2.out",
           },
-        });
-      }
+          "-=0.2"
+        )
+        .to(
+          `.desc-${item.id}`,
+          {
+            opacity: 1,
+            y: 0,
+            duration: normalizedDuration * 0.5,
+            ease: "power2.out",
+          },
+          "<"
+        );
     });
 
     const handleResize = () => {
@@ -312,215 +341,225 @@ export default function Timeline({
     };
 
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, { dependencies: [reducedMotion], scope: sectionRef });
+  }, { dependencies: [normalizedDuration, reducedMotion], scope: sectionRef });
 
   return (
     <section
       ref={sectionRef}
-      id="story"
-      className="relative w-full h-screen overflow-hidden flex flex-col justify-center pt-16 md:pt-20"
+      id="journey"
+      className="h-[280vw] max-[768px]:h-[460vh] w-full relative"
       style={sectionStyle}
     >
-      {/* Ambient Top Chronicle Header */}
-      <div className="absolute top-5 left-6 right-6 md:left-12 md:right-12 z-20 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-full animate-ping" style={activeStyle} />
-          <span className="font-mono text-xs uppercase tracking-[0.2em] font-bold text-[var(--accent)]">
-            Chronicle Rail · Scroll Down to Travel
-          </span>
-        </div>
-        <div className="font-mono text-xs text-[var(--text-muted)] bg-[var(--surface-panel)] px-3 py-1 rounded-full border border-[var(--border-warm)] shadow-xs">
-          {periodLabel}
-        </div>
-      </div>
-
-      {/* Horizontal Viewport Window */}
-      <div className="relative w-full h-[82vh] max-h-[740px] flex items-center overflow-visible">
+      {/* Sticky Viewport Container */}
+      <div className="h-screen w-screen sticky top-0 flex flex-col justify-center overflow-hidden pt-[80px] md:pt-[100px] pb-6">
         <div
-          ref={sliderRef}
-          className="flex h-full items-center pl-6 md:pl-16 pr-24 flex-nowrap will-change-transform"
+          ref={wholeSliderRef}
+          className="flex items-center h-[380px] md:h-[440px] w-max select-none"
+          style={{
+            paddingLeft: "clamp(140px, 18vw, 320px)",
+            paddingRight: "clamp(100px, 12vw, 240px)",
+          }}
         >
           {/* ========================================================= */}
-          {/* LEAD STORY CARD (FEATURING USER'S PIP ON CLOUD IMAGE)     */}
+          {/* 1. HERO IMAGE CARD (Shifted right with clean space after)  */}
           {/* ========================================================= */}
-          <div className="w-[340px] md:w-[380px] max-w-[85vw] h-[86%] flex-shrink-0 rounded-[var(--radius-xl)] bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] shadow-[var(--shadow-warm)] p-5 md:p-6 flex flex-col justify-between mr-[8vw] relative overflow-hidden group">
-            {/* Card Header */}
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-xl">⭐</span>
-                <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] font-bold">
-                  Origin Chronicle
-                </span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-serif font-bold italic tracking-tight text-[var(--body-text)] leading-tight">
-                {title}
-              </h2>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed font-story mt-1">
-                Follow Pip&apos;s journey from a fallen star in a porcelain teacup to cloud castles across sleeping rooftops.
-              </p>
-            </div>
-
-            {/* Pip on Cloud Portrait (Uncropped Aspect Ratio) */}
-            <div className="relative w-full h-[58%] rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-warm)] shadow-inner my-2.5 bg-gradient-to-b from-[#f3e9e2] to-[#e8d8d0]">
-              <img
-                src={imageUrl}
-                alt={imageAlt}
-                draggable={false}
-                className="w-full h-full object-cover object-[50%_15%] transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,17,25,0.72)] via-transparent to-transparent flex items-end p-3">
-                <span className="font-mono text-[11px] text-[#ffdd55] uppercase tracking-wider font-semibold">
-                  Pip &amp; The Sleepy Universe
-                </span>
-              </div>
-            </div>
-
-            {/* Card Footer Scroll Indicator */}
-            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-warm)] text-xs font-mono text-[var(--text-muted)]">
-              <span>Five Chapters</span>
-              <span className="text-[var(--accent)] flex items-center gap-1 font-semibold animate-pulse">
-                Scroll to Begin &rarr;
-              </span>
-            </div>
+          <div
+            className="rounded-[1.6rem] overflow-hidden border-2 border-[var(--border-warm)] shadow-lg bg-[var(--surface-panel)]"
+            style={{
+              width: "clamp(270px, 22vw, 340px)",
+              height: "clamp(270px, 22vw, 340px)",
+              marginRight: "clamp(70px, 8vw, 130px)",
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src={imageUrl}
+              alt={imageAlt}
+              draggable={false}
+              className="h-full w-full object-cover object-[50%_15%]"
+            />
           </div>
 
           {/* ========================================================= */}
-          {/* TIMELINE MILESTONES (1-BY-1 ALTERNATING TOP/BOTTOM)        */}
+          {/* 2. UNIFIED TIMELINE TRACK (Continuous Center Rail Behind)  */}
+          {/* Starts at the text block, maintaining space from picture  */}
           {/* ========================================================= */}
-          <div className="relative h-full flex items-center flex-nowrap">
-            {/* Central Rail Track */}
-            <div
-              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] bg-[var(--border-warm)] z-10 pointer-events-none rounded-full"
-              aria-hidden="true"
-            >
-              {/* Active Glowing Starlight Progress Beam */}
+          <div className="relative flex items-center h-full">
+            {/* Continuous Center Rail running behind Title and Milestones */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex items-center pointer-events-none z-10">
               <div
-                ref={progressBarRef}
-                className="journey-line-progress h-full w-[12%] rounded-full shadow-[0_0_14px_rgba(226,85,85,0.7)]"
+                className="size-2.5 rounded-full flex-shrink-0 shadow-sm"
+                style={activeStyle}
+              />
+              {/* Permanent neutral track rail */}
+              <div className="w-full h-[2px] bg-[var(--border-warm)] absolute left-0 top-1/2 -translate-y-1/2" />
+              {/* Active animated scrub line */}
+              <div
+                className="h-[2px] w-[0%] journey-line rounded-full relative z-10 shadow-[0_0_8px_rgba(163,64,99,0.5)]"
+                style={activeStyle}
+              />
+              <div
+                className="size-2.5 rounded-full flex-shrink-0 ml-auto shadow-sm"
                 style={activeStyle}
               />
             </div>
 
-            {/* Alternating Chapter Columns */}
-            <div className="flex items-center gap-[18vw] flex-nowrap pr-[16vw]">
-              {items.map((item) => {
-                const isTop = item.position === "top";
-
-                return (
-                  <div
-                    key={item.id}
-                    className="timeline-milestone relative w-[340px] md:w-[400px] h-full flex flex-col justify-between flex-shrink-0"
-                  >
-                    {isTop ? (
-                      /* TOP CARD CONTAINER */
-                      <>
-                        <div className="h-[46%] flex flex-col justify-end">
-                          <div className="chapter-card-inner bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] transition-all duration-300">
-                            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
-                              <div className="flex items-center gap-2">
-                                {item.badge && <span className="text-xl">{item.badge}</span>}
-                                <span className="font-mono text-xs uppercase tracking-wider font-bold text-[var(--accent)]">
-                                  {item.year}
-                                </span>
-                              </div>
-                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
-                                {item.month}
-                              </span>
-                            </div>
-
-                            <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
-                              {item.chapterTitle}
-                            </h3>
-
-                            <p className="text-xs md:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
-                              {item.content}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Top Stem & Central Rail Dot */}
-                        <div
-                          className="relative h-[8%] flex flex-col items-center justify-center pointer-events-none z-20"
-                          aria-hidden="true"
-                        >
-                          <div
-                            className="stem-line w-[2px] h-[34px] bg-[var(--accent)] origin-top rounded-full"
-                            style={activeStyle}
-                          />
-                          <div
-                            className="stem-dot size-4 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mt-2 z-30"
-                            style={activeStyle}
-                          />
-                        </div>
-
-                        {/* Bottom Spacer */}
-                        <div className="h-[46%]" />
-                      </>
-                    ) : (
-                      /* BOTTOM CARD CONTAINER */
-                      <>
-                        {/* Top Spacer */}
-                        <div className="h-[46%]" />
-
-                        {/* Central Rail Dot & Bottom Stem */}
-                        <div
-                          className="relative h-[8%] flex flex-col items-center justify-center pointer-events-none z-20"
-                          aria-hidden="true"
-                        >
-                          <div
-                            className="stem-dot size-4 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mb-2 z-30"
-                            style={activeStyle}
-                          />
-                          <div
-                            className="stem-line w-[2px] h-[34px] bg-[var(--accent)] origin-bottom rounded-full"
-                            style={activeStyle}
-                          />
-                        </div>
-
-                        <div className="h-[46%] flex flex-col justify-start">
-                          <div className="chapter-card-inner bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] transition-all duration-300">
-                            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
-                              <div className="flex items-center gap-2">
-                                {item.badge && <span className="text-xl">{item.badge}</span>}
-                                <span className="font-mono text-xs uppercase tracking-wider font-bold text-[var(--accent)]">
-                                  {item.year}
-                                </span>
-                              </div>
-                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
-                                {item.month}
-                              </span>
-                            </div>
-
-                            <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
-                              {item.chapterTitle}
-                            </h3>
-
-                            <p className="text-xs md:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
-                              {item.content}
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Finishing Chronicle Outro Tile */}
-              <div className="w-[280px] h-[46%] flex flex-col justify-center items-center text-center p-6 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border-warm)] bg-[var(--surface-panel)] flex-shrink-0 opacity-80">
-                <span className="text-3xl mb-2">✨</span>
-                <h4 className="font-serif font-bold italic text-lg text-[var(--body-text)] mb-1">
-                  The Journey Continues
-                </h4>
-                <p className="text-xs text-[var(--text-muted)] font-story leading-relaxed">
-                  Pip is awake on the midnight shift, keeping the nursery glowing for every traveler.
+            {/* ------------------------------------------------------- */}
+            {/* Title Block: Top = Title, Bottom = Period Label         */}
+            {/* Matches 'Product Storyline' position in reference image */}
+            {/* ------------------------------------------------------- */}
+            <div
+              className="relative z-20 flex flex-col justify-between h-full"
+              style={{
+                width: "clamp(240px, 18vw, 300px)",
+                marginRight: "clamp(70px, 8vw, 140px)",
+                flexShrink: 0,
+              }}
+            >
+              {/* Top half: Lifted into upper third with generous clearance above the line */}
+              <div
+                className="h-1/2 flex flex-col justify-end pr-4"
+                style={{ paddingBottom: "52px" }}
+              >
+                <h2 className="text-3xl md:text-4xl lg:text-[2.6rem] font-bold tracking-tight text-[var(--body-text)] leading-[1.08] font-display">
+                  {title === "How Pip Began" ? (
+                    <>
+                      <span className="block">How Pip</span>
+                      <span className="block">Began</span>
+                    </>
+                  ) : (
+                    title
+                  )}
+                </h2>
+              </div>
+              {/* Bottom half: Period Label comfortably below center line */}
+              <div
+                className="h-1/2 flex flex-col justify-start pr-4"
+                style={{ paddingTop: "28px" }}
+              >
+                <p
+                  className="text-sm md:text-base font-semibold tracking-wide"
+                  style={mutedTextStyle}
+                >
+                  {periodLabel}
                 </p>
               </div>
             </div>
+
+            {/* ------------------------------------------------------- */}
+            {/* Sequential Milestones (Alternating Top / Bottom)        */}
+            {/* Guaranteed ZERO collisions & ZERO horizontal overlap     */}
+            {/* ------------------------------------------------------- */}
+            {allJourneyItems.map((item, index) => {
+              const isTop = index % 2 === 0;
+
+              return (
+                <div
+                  key={item.id}
+                  className="relative flex flex-col h-full z-20"
+                  style={{
+                    width: "clamp(250px, 20vw, 300px)",
+                    marginRight: "clamp(60px, 7vw, 120px)",
+                    flexShrink: 0,
+                  }}
+                >
+                  {isTop ? (
+                    <>
+                      {/* Top Milestone: Text and Dot at the TOP of the pointed line */}
+                      <div
+                        className="h-1/2 relative flex items-start"
+                        style={{ paddingTop: "20px" }}
+                      >
+                        {/* Column 1: Vertical Stem & Dot */}
+                        <div
+                          className="relative flex flex-col items-center flex-shrink-0"
+                          style={{ width: "14px", alignSelf: "stretch" }}
+                        >
+                          {/* Dot at the very top of the line */}
+                          <div
+                            className={`size-3 rounded-full jd-${item.id} shadow-sm z-30 flex-shrink-0 mt-1`}
+                            style={activeStyle}
+                          />
+                          {/* Vertical Stem connecting from dot down to the center rail */}
+                          <div
+                            className={`w-[2px] flex-1 origin-bottom rounded-full jl-${item.id}`}
+                            style={activeStyle}
+                          />
+                        </div>
+
+                        {/* Column 2: Text strictly to the right with guaranteed margin */}
+                        <div
+                          className="flex-1 min-w-0 space-y-1.5"
+                          style={{ marginLeft: "20px", maxWidth: "260px" }}
+                        >
+                          <h4
+                            className={`title-${item.id} text-xl md:text-2xl font-bold tracking-tight text-[var(--body-text)] font-sans leading-tight`}
+                          >
+                            {item.year} {item.month}
+                          </h4>
+                          <p
+                            className={`desc-${item.id} text-sm md:text-[15px] leading-relaxed font-story`}
+                            style={mutedTextStyle}
+                          >
+                            {item.content}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Empty bottom half maintains the alternating rhythm */}
+                      <div className="h-1/2 pointer-events-none" />
+                    </>
+                  ) : (
+                    <>
+                      {/* Empty top half maintains the alternating rhythm */}
+                      <div className="h-1/2 pointer-events-none" />
+                      {/* Bottom Milestone: Text and Dot at the BOTTOM of the pointed line */}
+                      <div
+                        className="h-1/2 relative flex items-end"
+                        style={{ paddingBottom: "20px" }}
+                      >
+                        {/* Column 1: Vertical Stem & Dot */}
+                        <div
+                          className="relative flex flex-col items-center flex-shrink-0"
+                          style={{ width: "14px", alignSelf: "stretch" }}
+                        >
+                          {/* Vertical Stem connecting from center rail down to dot */}
+                          <div
+                            className={`w-[2px] flex-1 origin-top rounded-full jl-${item.id}`}
+                            style={activeStyle}
+                          />
+                          {/* Dot at the bottom of the line */}
+                          <div
+                            className={`size-3 rounded-full jd-${item.id} shadow-sm z-30 flex-shrink-0 mb-1`}
+                            style={activeStyle}
+                          />
+                        </div>
+
+                        {/* Column 2: Text strictly to the right with guaranteed margin */}
+                        <div
+                          className="flex-1 min-w-0 space-y-1.5"
+                          style={{ marginLeft: "20px", maxWidth: "260px", paddingBottom: "4px" }}
+                        >
+                          <h4
+                            className={`title-${item.id} text-xl md:text-2xl font-bold tracking-tight text-[var(--body-text)] font-sans leading-tight`}
+                          >
+                            {item.year} {item.month}
+                          </h4>
+                          <p
+                            className={`desc-${item.id} text-sm md:text-[15px] leading-relaxed font-story`}
+                            style={mutedTextStyle}
+                          >
+                            {item.content}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

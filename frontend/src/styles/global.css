@@ -28,7 +28,7 @@ body {
   font-size: 1rem;
   transition: background-color var(--dur-slow) var(--ease-soft),
               color var(--dur-slow) var(--ease-soft);
-  overflow-x: hidden;
+  overflow-x: clip;
   /* Dotted background texture */
   background-image: radial-gradient(circle, var(--border-warm) 1px, transparent 1px);
   background-size: 20px 20px;
