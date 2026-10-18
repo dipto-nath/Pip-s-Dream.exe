@@ -63,8 +63,15 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
         }}
       />
 
-      {/* Hidden Easter Egg Star in the starry sky */}
-      <div style={{ position: 'absolute', top: '16%', right: '14%', zIndex: 3 }}>
+      {/* Whimsical Floating Easter Egg Charm */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 'clamp(24px, 5vh, 48px)',
+          right: 'clamp(16px, 4vw, 48px)',
+          zIndex: 10,
+        }}
+      >
         <EasterEggTrigger />
       </div>
 
@@ -277,6 +284,12 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
           background: rgba(26, 17, 36, 0.72) !important;
           border-color: rgba(255, 255, 255, 0.16) !important;
           box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 24px rgba(245, 158, 11, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+        }
+        [data-theme='dream'] .easter-egg-btn {
+          background: rgba(36, 22, 50, 0.8) !important;
+          border-color: rgba(245, 158, 11, 0.6) !important;
+          color: #fff8f1 !important;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(245, 158, 11, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
         }
         [data-theme='dream'] #hero-heading {
           text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.25) !important;
