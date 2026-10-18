@@ -174,6 +174,10 @@ export function InteractivePip({
   }, [prefersReduced]);
 
   const handleClick = useCallback(() => {
+    // Clear any text/image selection ranges if accidentally initiated by rapid clicks
+    if (typeof window !== 'undefined' && window.getSelection) {
+      window.getSelection()?.removeAllRanges();
+    }
     triggerBlink(180);
     setIsLanternGlow(true);
     setIsBouncing(true);
@@ -195,6 +199,14 @@ export function InteractivePip({
       ref={containerRef}
       className={`interactive-pip-container ${className}`}
       onClick={handleClick}
+      onMouseDown={(e) => {
+        // Prevent default mousedown to prevent Safari/WebKit from selecting image on rapid/double click
+        e.preventDefault();
+      }}
+      onDoubleClick={(e) => {
+        // Prevent default double click selection
+        e.preventDefault();
+      }}
       role="img"
       aria-label="Pip, the Junior Dream Engineer, sitting on a soft cloud with a glowing lantern and unicorn music box. Pip follows your cursor with their warm amber eyes."
       style={{
@@ -202,8 +214,11 @@ export function InteractivePip({
         width: 'clamp(280px, 36vw, 440px)',
         aspectRatio: '400 / 524',
         userSelect: 'none',
+        WebkitUserSelect: 'none',
         touchAction: 'pan-y',
         cursor: 'pointer',
+        outline: 'none',
+        WebkitTapHighlightColor: 'transparent',
         ...style,
       }}
     >
@@ -233,6 +248,8 @@ export function InteractivePip({
           position: 'relative',
           width: '100%',
           height: '100%',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
           animation: prefersReduced
             ? 'none'
             : isBouncing
@@ -251,6 +268,8 @@ export function InteractivePip({
             height: '100%',
             transformStyle: 'preserve-3d',
             willChange: 'transform',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
         >
           {/* Pip character image (clean transparent background) */}
@@ -260,12 +279,15 @@ export function InteractivePip({
             loading="eager"
             fetchPriority="high"
             draggable={false}
+            onDragStart={(e) => e.preventDefault()}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'contain',
               display: 'block',
               pointerEvents: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
               filter: 'drop-shadow(0 14px 28px rgba(163, 64, 99, 0.12)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08))',
             }}
           />
@@ -476,6 +498,37 @@ export function InteractivePip({
           40% { transform: scale(0.94) translateY(6px); }
           75% { transform: scale(1.05) translateY(-8px); }
           100% { transform: scale(1); }
+        }
+
+        .interactive-pip-container,
+        .interactive-pip-container * {
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+          -webkit-user-drag: none !important;
+          -webkit-touch-callout: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+
+        .interactive-pip-container ::selection,
+        .interactive-pip-container *::selection {
+          background: transparent !important;
+          color: inherit !important;
+        }
+
+        .interactive-pip-container ::-moz-selection,
+        .interactive-pip-container *::-moz-selection {
+          background: transparent !important;
+          color: inherit !important;
+        }
+
+        .interactive-pip-container img {
+          -webkit-user-drag: none !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          pointer-events: none !important;
+          -webkit-touch-callout: none !important;
         }
       `}</style>
     </div>
