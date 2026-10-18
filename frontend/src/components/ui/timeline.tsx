@@ -75,6 +75,7 @@ export type JourneyItem = {
   content: string;
   chapterTitle?: string;
   badge?: string;
+  position?: "top" | "bottom";
 };
 
 export type TimelineProps = {
@@ -86,11 +87,8 @@ export type TimelineProps = {
   backgroundColor?: string;
   imageUrl?: string;
   imageAlt?: string;
-  topData?: JourneyItem[];
-  bottomData?: JourneyItem[];
-  /** Reveal animation duration, in seconds. */
+  items?: JourneyItem[];
   duration?: number;
-  /** Fallback reveal duration when `duration` is omitted, in seconds. */
   scrollDuration?: number;
 };
 
@@ -123,16 +121,27 @@ function usePrefersReducedMotion() {
   );
 }
 
-// Pip's Origin Story chapters
-const defaultTopJourneyData: JourneyItem[] = [
+// All 5 Pip Origin Story Chapters in alternating top/bottom order
+const defaultStoryItems: JourneyItem[] = [
   {
     id: "pip-ch1",
     year: "Chapter 01",
     month: "March",
     chapterTitle: "The Little Star",
     badge: "⭐",
+    position: "top",
     content:
-      "One sleepy evening, a small fallen star drifted through an open window and landed in a porcelain teacup. By morning, its soft warmth became the quiet starlight living in Pip's eyes.",
+      "One sleepy evening, a small fallen star drifted through an open window and landed inside a porcelain teacup. By morning, its soft warmth became the quiet starlight living in Pip's eyes.",
+  },
+  {
+    id: "pip-ch2",
+    year: "Chapter 02",
+    month: "November",
+    chapterTitle: "The Quiet Little Problem",
+    badge: "🌙",
+    position: "bottom",
+    content:
+      "The neighborhood creatures were having restless nights. Their dreams came out repetitive and grey — the same three clouds, the same fence. Pip decided something had to be done.",
   },
   {
     id: "pip-ch3",
@@ -140,29 +149,9 @@ const defaultTopJourneyData: JourneyItem[] = [
     month: "July",
     chapterTitle: "The First Invention",
     badge: "🎵",
+    position: "top",
     content:
       "With a borrowed music box, bits of moonlight, a dented thimble, and extraordinary trial and error, Pip tuned the very first dream instrument. The neighborhood grew peacefully quiet.",
-  },
-  {
-    id: "pip-ch5",
-    year: "Chapter 05",
-    month: "December",
-    chapterTitle: "The Next Little Dream",
-    badge: "💻",
-    content:
-      "The old nursery computer remains awake long after midnight. Every visitor brings a new bedtime possibility, with hidden notes waiting for curious dreamers who explore.",
-  },
-];
-
-const defaultBottomJourneyData: JourneyItem[] = [
-  {
-    id: "pip-ch2",
-    year: "Chapter 02",
-    month: "November",
-    chapterTitle: "The Quiet Little Problem",
-    badge: "🌙",
-    content:
-      "The neighborhood creatures were having restless nights. Their dreams came out repetitive and grey — the same three clouds, the same fence. Pip decided something had to be done.",
   },
   {
     id: "pip-ch4",
@@ -170,8 +159,19 @@ const defaultBottomJourneyData: JourneyItem[] = [
     month: "September",
     chapterTitle: "Rooftop Delivery School",
     badge: "🏠",
+    position: "bottom",
     content:
       "Pip drew chimney routes on nursery paper, delivering custom bedtime adventures: cloud castles for the restless, quiet seas for the anxious, and talking teacups for the lonely.",
+  },
+  {
+    id: "pip-ch5",
+    year: "Chapter 05",
+    month: "December",
+    chapterTitle: "The Next Little Dream",
+    badge: "💻",
+    position: "top",
+    content:
+      "The old nursery computer remains awake long after midnight. Every visitor brings a new bedtime possibility, with hidden notes waiting for curious dreamers who explore.",
   },
 ];
 
@@ -181,13 +181,12 @@ export default function Timeline({
   textColor = "var(--body-text, #261b23)",
   activeColor = "var(--accent, #e25555)",
   backgroundColor = "var(--surface-muted, #f7f1e8)",
-  imageUrl = "/assets/pip_portrait.png",
-  imageAlt = "Pip looking out from the nursery",
-  topData = defaultTopJourneyData,
-  bottomData = defaultBottomJourneyData,
+  imageUrl = "/assets/pip_cloud_star.jpg",
+  imageAlt = "Pip riding a cloud in the starlight sky with a unicorn plushie",
+  items = defaultStoryItems,
 }: TimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const wholeSliderRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
@@ -201,106 +200,110 @@ export default function Timeline({
 
   useGSAP(() => {
     const section = sectionRef.current;
-    const slider = wholeSliderRef.current;
+    const slider = sliderRef.current;
     if (!section || !slider) return;
 
     if (reducedMotion) {
-      // In reduced motion, ensure all stems, dots, and lines are 100% visible
+      // Accessible static state
       gsap.set(".journey-line-progress", { width: "100%" });
       gsap.set(".stem-line", { scaleY: 1 });
       gsap.set(".stem-dot", { scale: 1 });
-      gsap.set(".chapter-card", { opacity: 1 });
+      gsap.set(".chapter-card-inner", { opacity: 1 });
       return;
     }
 
-    // Measure total horizontal scroll distance
-    const getScrollDistance = () => {
-      const scrollWidth = slider.scrollWidth;
-      const clientWidth = window.innerWidth;
-      return Math.max(400, scrollWidth - clientWidth + 120);
+    // Calculate total horizontal travel
+    const getTravelDistance = () => {
+      return Math.max(600, slider.scrollWidth - window.innerWidth + 200);
     };
 
-    // Pin the section with GSAP ScrollTrigger and scrub the horizontal slider
-    const scrollDistance = getScrollDistance();
+    const travelDistance = getTravelDistance();
 
+    // Horizontal track pinning tween
     const horizontalTween = gsap.to(slider, {
-      x: () => -getScrollDistance(),
+      x: () => -getTravelDistance(),
       ease: "none",
       scrollTrigger: {
         trigger: section,
         pin: true,
         start: "top top",
-        end: () => `+=${scrollDistance * 1.3}`,
-        scrub: 0.8,
+        end: () => `+=${travelDistance * 1.2}`,
+        scrub: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           if (progressBarRef.current) {
-            progressBarRef.current.style.width = `${Math.min(100, Math.max(12, self.progress * 100))}%`;
+            progressBarRef.current.style.width = `${Math.min(100, Math.max(10, self.progress * 100))}%`;
           }
         },
       },
     });
 
-    // Animate stems and cards as they enter into the active reading zone
-    const allCards = section.querySelectorAll<HTMLElement>(".chapter-card");
-    allCards.forEach((card) => {
-      const stemLine = card.querySelector<HTMLElement>(".stem-line");
-      const stemDot = card.querySelector<HTMLElement>(".stem-dot");
+    // Animate each milestone 1-by-1 as it enters the reading focus zone
+    const milestoneElements = section.querySelectorAll<HTMLElement>(".timeline-milestone");
 
-      gsap.fromTo(
-        card,
-        { opacity: 0.5, scale: 0.95 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.4,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: card,
-            containerAnimation: horizontalTween,
-            start: "left 85%",
-            end: "left 40%",
-            scrub: true,
-          },
-        }
-      );
+    milestoneElements.forEach((milestone, idx) => {
+      const card = milestone.querySelector<HTMLElement>(".chapter-card-inner");
+      const stem = milestone.querySelector<HTMLElement>(".stem-line");
+      const dot = milestone.querySelector<HTMLElement>(".stem-dot");
 
-      if (stemLine) {
-        gsap.fromTo(
-          stemLine,
-          { scaleY: 0.2 },
-          {
-            scaleY: 1,
-            duration: 0.4,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: horizontalTween,
-              start: "left 90%",
-              end: "left 50%",
-              scrub: true,
-            },
-          }
-        );
+      // Chapter 1 starts near the center, so it is active immediately
+      const isFirst = idx === 0;
+
+      if (isFirst) {
+        if (card) gsap.set(card, { opacity: 1, scale: 1 });
+        if (stem) gsap.set(stem, { scaleY: 1 });
+        if (dot) gsap.set(dot, { scale: 1.25 });
+      } else {
+        if (card) gsap.set(card, { opacity: 0.28, scale: 0.94 });
+        if (stem) gsap.set(stem, { scaleY: 0.2 });
+        if (dot) gsap.set(dot, { scale: 0.5 });
       }
 
-      if (stemDot) {
-        gsap.fromTo(
-          stemDot,
-          { scale: 0.5 },
-          {
-            scale: 1.2,
-            duration: 0.4,
-            ease: "back.out(2)",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: horizontalTween,
-              start: "left 90%",
-              end: "left 50%",
-              scrub: true,
-            },
-          }
-        );
+      // 1-by-1 reflection trigger as this milestone scrolls into center
+      if (card) {
+        gsap.to(card, {
+          opacity: 1,
+          scale: 1,
+          boxShadow: "0 10px 32px rgba(226, 85, 85, 0.25), 3px 3px 0 var(--shadow-warm)",
+          borderColor: "var(--accent)",
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: milestone,
+            containerAnimation: horizontalTween,
+            start: "left 80%",
+            end: "left 48%",
+            scrub: true,
+          },
+        });
+      }
+
+      if (stem) {
+        gsap.to(stem, {
+          scaleY: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: milestone,
+            containerAnimation: horizontalTween,
+            start: "left 85%",
+            end: "left 52%",
+            scrub: true,
+          },
+        });
+      }
+
+      if (dot) {
+        gsap.to(dot, {
+          scale: 1.3,
+          backgroundColor: "var(--accent)",
+          ease: "back.out(2)",
+          scrollTrigger: {
+            trigger: milestone,
+            containerAnimation: horizontalTween,
+            start: "left 85%",
+            end: "left 52%",
+            scrub: true,
+          },
+        });
       }
     });
 
@@ -319,14 +322,14 @@ export default function Timeline({
     <section
       ref={sectionRef}
       id="story"
-      className="relative w-full h-screen overflow-hidden flex flex-col justify-center"
+      className="relative w-full h-screen overflow-hidden flex flex-col justify-center pt-16 md:pt-20"
       style={sectionStyle}
     >
-      {/* Top ambient track indicator */}
-      <div className="absolute top-4 left-8 right-8 z-20 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-3">
+      {/* Ambient Top Chronicle Header */}
+      <div className="absolute top-5 left-6 right-6 md:left-12 md:right-12 z-20 flex items-center justify-between pointer-events-none">
+        <div className="flex items-center gap-2.5">
           <span className="inline-block w-2.5 h-2.5 rounded-full animate-ping" style={activeStyle} />
-          <span className="font-mono text-xs uppercase tracking-[0.2em] font-semibold text-[var(--accent)]">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] font-bold text-[var(--accent)]">
             Chronicle Rail · Scroll Down to Travel
           </span>
         </div>
@@ -335,171 +338,188 @@ export default function Timeline({
         </div>
       </div>
 
-      <div className="relative w-full h-[85vh] max-h-[760px] flex items-center overflow-visible">
+      {/* Horizontal Viewport Window */}
+      <div className="relative w-full h-[82vh] max-h-[740px] flex items-center overflow-visible">
         <div
-          ref={wholeSliderRef}
-          className="flex h-full items-center gap-[4vw] px-[4vw] flex-nowrap will-change-transform"
+          ref={sliderRef}
+          className="flex h-full items-center pl-6 md:pl-16 pr-24 flex-nowrap will-change-transform"
         >
           {/* ========================================================= */}
-          {/* LEAD STORY CARD                                           */}
+          {/* LEAD STORY CARD (FEATURING USER'S PIP ON CLOUD IMAGE)     */}
           {/* ========================================================= */}
-          <div className="w-[380px] max-w-[85vw] h-[82%] flex-shrink-0 rounded-[var(--radius-xl)] bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] shadow-[var(--shadow-warm)] p-6 flex flex-col justify-between relative overflow-hidden">
-            {/* Top Eyebrow & Title */}
+          <div className="w-[340px] md:w-[380px] max-w-[85vw] h-[86%] flex-shrink-0 rounded-[var(--radius-xl)] bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] shadow-[var(--shadow-warm)] p-5 md:p-6 flex flex-col justify-between mr-[8vw] relative overflow-hidden group">
+            {/* Card Header */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xl">⭐</span>
-                <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] font-semibold">
+                <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] font-bold">
                   Origin Chronicle
                 </span>
               </div>
-              <h2 className="text-3xl lg:text-4xl font-serif font-bold italic tracking-tight text-[var(--body-text)] mb-3 leading-tight">
+              <h2 className="text-2xl md:text-3xl font-serif font-bold italic tracking-tight text-[var(--body-text)] leading-tight">
                 {title}
               </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed font-story">
-                Follow Pip&apos;s journey from a fallen star in a teacup to cloud castles across sleeping rooftops.
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed font-story mt-1">
+                Follow Pip&apos;s journey from a fallen star in a porcelain teacup to cloud castles across sleeping rooftops.
               </p>
             </div>
 
-            {/* Pip Portrait Visual */}
-            <div className="relative w-full h-[48%] rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-warm)] shadow-inner my-3">
+            {/* Pip on Cloud Portrait (Uncropped Aspect Ratio) */}
+            <div className="relative w-full h-[58%] rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-warm)] shadow-inner my-2.5 bg-gradient-to-b from-[#f3e9e2] to-[#e8d8d0]">
               <img
                 src={imageUrl}
                 alt={imageAlt}
                 draggable={false}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105"
+                className="w-full h-full object-cover object-[50%_15%] transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,17,25,0.7)] via-transparent to-transparent flex items-end p-3">
+              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,17,25,0.72)] via-transparent to-transparent flex items-end p-3">
                 <span className="font-mono text-[11px] text-[#ffdd55] uppercase tracking-wider font-semibold">
-                  Midnight Nursery Archive
+                  Pip &amp; The Sleepy Universe
                 </span>
               </div>
             </div>
 
-            {/* Bottom Scroll Cue */}
+            {/* Card Footer Scroll Indicator */}
             <div className="flex items-center justify-between pt-2 border-t border-[var(--border-warm)] text-xs font-mono text-[var(--text-muted)]">
-              <span>5 Chapters</span>
+              <span>Five Chapters</span>
               <span className="text-[var(--accent)] flex items-center gap-1 font-semibold animate-pulse">
-                Scroll &rarr;
+                Scroll to Begin &rarr;
               </span>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* TIMELINE BRANCHES & TRACK RAIL                            */}
+          {/* TIMELINE MILESTONES (1-BY-1 ALTERNATING TOP/BOTTOM)        */}
           {/* ========================================================= */}
-          <div className="relative h-full flex flex-col justify-between py-2 min-w-[1600px] lg:min-w-[2100px]">
-            {/* Continuous Center Track Rail */}
+          <div className="relative h-full flex items-center flex-nowrap">
+            {/* Central Rail Track */}
             <div
-              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[4px] bg-[var(--border-warm)] z-10 pointer-events-none rounded-full"
+              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] bg-[var(--border-warm)] z-10 pointer-events-none rounded-full"
               aria-hidden="true"
             >
-              {/* Active Glowing Progress Rail */}
+              {/* Active Glowing Starlight Progress Beam */}
               <div
                 ref={progressBarRef}
-                className="journey-line-progress h-full w-[16%] rounded-full transition-all duration-75 shadow-[0_0_12px_rgba(226,85,85,0.6)]"
+                className="journey-line-progress h-full w-[12%] rounded-full shadow-[0_0_14px_rgba(226,85,85,0.7)]"
                 style={activeStyle}
               />
             </div>
 
-            {/* ======================================================= */}
-            {/* TOP BRANCH (Chapters 1, 3, 5)                           */}
-            {/* ======================================================= */}
-            <div className="flex items-end justify-start gap-[10vw] pb-10 h-[46%]">
-              {topData.map((item, idx) => (
-                <div
-                  key={`top-${item.id}`}
-                  className="chapter-card relative w-[340px] sm:w-[380px] flex-shrink-0 flex flex-col justify-end"
-                  style={{ marginLeft: idx === 0 ? "2vw" : "0" }}
-                >
-                  {/* Chapter Content Card */}
-                  <div className="bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] hover:border-[var(--accent)] transition-colors">
-                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
-                      <div className="flex items-center gap-2">
-                        {item.badge && <span className="text-xl">{item.badge}</span>}
-                        <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[var(--accent)]">
-                          {item.year}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[11px] text-[var(--text-muted)]">
-                        {item.month}
-                      </span>
-                    </div>
+            {/* Alternating Chapter Columns */}
+            <div className="flex items-center gap-[18vw] flex-nowrap pr-[16vw]">
+              {items.map((item) => {
+                const isTop = item.position === "top";
 
-                    <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
-                      {item.chapterTitle}
-                    </h3>
-
-                    <p className="text-xs sm:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
-                      {item.content}
-                    </p>
-                  </div>
-
-                  {/* Stem & Dot connecting to central track */}
+                return (
                   <div
-                    className="relative w-full flex flex-col items-center pt-2 pointer-events-none"
-                    aria-hidden="true"
+                    key={item.id}
+                    className="timeline-milestone relative w-[340px] md:w-[400px] h-full flex flex-col justify-between flex-shrink-0"
                   >
-                    <div
-                      className="stem-line w-[2px] h-[36px] bg-[var(--accent)] origin-top rounded-full"
-                      style={activeStyle}
-                    />
-                    <div
-                      className="stem-dot size-3.5 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mt-1.5 z-20"
-                      style={activeStyle}
-                    />
+                    {isTop ? (
+                      /* TOP CARD CONTAINER */
+                      <>
+                        <div className="h-[46%] flex flex-col justify-end">
+                          <div className="chapter-card-inner bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] transition-all duration-300">
+                            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
+                              <div className="flex items-center gap-2">
+                                {item.badge && <span className="text-xl">{item.badge}</span>}
+                                <span className="font-mono text-xs uppercase tracking-wider font-bold text-[var(--accent)]">
+                                  {item.year}
+                                </span>
+                              </div>
+                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
+                                {item.month}
+                              </span>
+                            </div>
+
+                            <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
+                              {item.chapterTitle}
+                            </h3>
+
+                            <p className="text-xs md:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
+                              {item.content}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Top Stem & Central Rail Dot */}
+                        <div
+                          className="relative h-[8%] flex flex-col items-center justify-center pointer-events-none z-20"
+                          aria-hidden="true"
+                        >
+                          <div
+                            className="stem-line w-[2px] h-[34px] bg-[var(--accent)] origin-top rounded-full"
+                            style={activeStyle}
+                          />
+                          <div
+                            className="stem-dot size-4 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mt-2 z-30"
+                            style={activeStyle}
+                          />
+                        </div>
+
+                        {/* Bottom Spacer */}
+                        <div className="h-[46%]" />
+                      </>
+                    ) : (
+                      /* BOTTOM CARD CONTAINER */
+                      <>
+                        {/* Top Spacer */}
+                        <div className="h-[46%]" />
+
+                        {/* Central Rail Dot & Bottom Stem */}
+                        <div
+                          className="relative h-[8%] flex flex-col items-center justify-center pointer-events-none z-20"
+                          aria-hidden="true"
+                        >
+                          <div
+                            className="stem-dot size-4 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mb-2 z-30"
+                            style={activeStyle}
+                          />
+                          <div
+                            className="stem-line w-[2px] h-[34px] bg-[var(--accent)] origin-bottom rounded-full"
+                            style={activeStyle}
+                          />
+                        </div>
+
+                        <div className="h-[46%] flex flex-col justify-start">
+                          <div className="chapter-card-inner bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] transition-all duration-300">
+                            <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
+                              <div className="flex items-center gap-2">
+                                {item.badge && <span className="text-xl">{item.badge}</span>}
+                                <span className="font-mono text-xs uppercase tracking-wider font-bold text-[var(--accent)]">
+                                  {item.year}
+                                </span>
+                              </div>
+                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
+                                {item.month}
+                              </span>
+                            </div>
+
+                            <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
+                              {item.chapterTitle}
+                            </h3>
+
+                            <p className="text-xs md:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
+                              {item.content}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                );
+              })}
 
-            {/* ======================================================= */}
-            {/* BOTTOM BRANCH (Chapters 2, 4)                           */}
-            {/* ======================================================= */}
-            <div className="flex items-start justify-start gap-[14vw] pt-10 h-[46%] ml-[16vw]">
-              {bottomData.map((item) => (
-                <div
-                  key={`bottom-${item.id}`}
-                  className="chapter-card relative w-[340px] sm:w-[380px] flex-shrink-0 flex flex-col justify-start"
-                >
-                  {/* Stem & Dot connecting from central track */}
-                  <div
-                    className="relative w-full flex flex-col items-center pb-2 pointer-events-none"
-                    aria-hidden="true"
-                  >
-                    <div
-                      className="stem-dot size-3.5 rounded-full border-2 border-[var(--surface-panel)] shadow-sm -mb-1.5 z-20"
-                      style={activeStyle}
-                    />
-                    <div
-                      className="stem-line w-[2px] h-[36px] bg-[var(--accent)] origin-bottom rounded-full"
-                      style={activeStyle}
-                    />
-                  </div>
-
-                  {/* Chapter Content Card */}
-                  <div className="bg-[var(--surface-panel)] border-2 border-[var(--border-warm)] rounded-[var(--radius-lg)] p-5 shadow-[2px_2px_0_var(--shadow-warm)] hover:border-[var(--accent)] transition-colors">
-                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-[var(--border-warm)]">
-                      <div className="flex items-center gap-2">
-                        {item.badge && <span className="text-xl">{item.badge}</span>}
-                        <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[var(--accent)]">
-                          {item.year}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[11px] text-[var(--text-muted)]">
-                        {item.month}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-serif font-bold italic text-[var(--body-text)] mb-2">
-                      {item.chapterTitle}
-                    </h3>
-
-                    <p className="text-xs sm:text-[13px] leading-relaxed text-[var(--text-muted)] font-story">
-                      {item.content}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              {/* Finishing Chronicle Outro Tile */}
+              <div className="w-[280px] h-[46%] flex flex-col justify-center items-center text-center p-6 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border-warm)] bg-[var(--surface-panel)] flex-shrink-0 opacity-80">
+                <span className="text-3xl mb-2">✨</span>
+                <h4 className="font-serif font-bold italic text-lg text-[var(--body-text)] mb-1">
+                  The Journey Continues
+                </h4>
+                <p className="text-xs text-[var(--text-muted)] font-story leading-relaxed">
+                  Pip is awake on the midnight shift, keeping the nursery glowing for every traveler.
+                </p>
+              </div>
             </div>
           </div>
         </div>

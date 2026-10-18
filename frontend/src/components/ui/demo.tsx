@@ -37,8 +37,8 @@ export default function TimelineDemo(props: Partial<typeof settings>) {
         textColor={s.textColor}
         mutedTextColor={s.mutedTextColor}
         activeColor={s.activeColor}
-        imageUrl="/assets/pip_portrait.png"
-        imageAlt="Pip peering from the Midnight Nursery window"
+        imageUrl="/assets/pip_cloud_star.jpg"
+        imageAlt="Pip riding a cloud in the starlight sky with a unicorn plushie"
         duration={s.duration}
       />
 

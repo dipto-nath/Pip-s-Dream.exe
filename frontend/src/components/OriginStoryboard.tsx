@@ -10,8 +10,8 @@ export function OriginStoryboard() {
     <Timeline
       title="How Pip Began"
       periodLabel="Origin Story · Five Chapters"
-      imageUrl="/assets/pip_portrait.png"
-      imageAlt="Pip peering from the Midnight Nursery window"
+      imageUrl="/assets/pip_cloud_star.jpg"
+      imageAlt="Pip riding a cozy cloud in the starlight sky with a unicorn plushie"
       textColor="var(--body-text)"
       mutedTextColor="var(--text-muted)"
       activeColor="var(--accent)"
