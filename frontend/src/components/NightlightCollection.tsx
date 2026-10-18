@@ -8,11 +8,15 @@ import { motion } from 'framer-motion';
 import { Power } from 'lucide-react';
 import { NIGHTLIGHT_PRESETS } from '../lib/dreamContent';
 import type { LanternPreset } from '../lib/types';
+import { useVisitorMemory } from '../hooks/useVisitorMemory';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
 
 export function NightlightCollection() {
-  const [activePreset, setActivePreset] = useState<LanternPreset>('moonbeam');
+  const { profile, savePreset } = useVisitorMemory();
+  const [activePreset, setActivePreset] = useState<LanternPreset>(
+    () => profile?.favoritePreset ?? 'moonbeam',
+  );
   const [on, setOn] = useState(true);
   const [intensity, setIntensity] = useState<number>(0.55);
   const { soundEnabled } = useSoundContext();
@@ -25,6 +29,7 @@ export function NightlightCollection() {
     setActivePreset(id);
     const p = NIGHTLIGHT_PRESETS.find((pp) => pp.id === id)!;
     setIntensity(p.intensity);
+    savePreset(id);
     playChime(660);
   }
 

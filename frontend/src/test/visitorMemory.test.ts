@@ -149,8 +149,50 @@ describe('profile mutation helpers', () => {
     expect(isReturningVisitor()).toBe(true);
   });
 
-  it('generates a personalized greeting', () => {
+  it('generates a first-visit greeting with isFirst=true when no profile exists', () => {
     const greeting = getPersonalizedGreeting();
-    expect(greeting.text).toBeTruthy();
+    expect(greeting.isFirst).toBe(true);
+    expect(greeting.text.length).toBeGreaterThan(0);
+  });
+
+  it('returns a returning greeting with isFirst=false after profile exists', () => {
+    initializeProfile();
+    const profile = loadProfile();
+    if (profile) {
+      profile.visitCount = 3;
+      saveProfile(profile);
+    }
+    const greeting = getPersonalizedGreeting();
+    expect(greeting.isFirst).toBe(false);
+    expect(greeting.text.length).toBeGreaterThan(0);
+  });
+
+  it('includes the visitor name in the greeting', () => {
+    initializeProfile();
+    updateVisitorName('Starlight');
+    const profile = loadProfile();
+    if (profile) {
+      profile.visitCount = 3;
+      saveProfile(profile);
+    }
+    const greeting = getPersonalizedGreeting();
+    expect(greeting.text).toContain('Starlight');
+  });
+
+  it('gives a special greeting for frequent visitors (10+ visits)', () => {
+    initializeProfile();
+    updateVisitorName('Starlight');
+    localStorage.setItem('pip-exe-visits', '12');
+    const greeting = getPersonalizedGreeting();
+    expect(greeting.text.toLowerCase()).toContain('keep coming back');
+  });
+
+  it('gives a regular-visitor greeting for 5+ visits', () => {
+    initializeProfile();
+    updateVisitorName('Starlight');
+    localStorage.setItem('pip-exe-visits', '7');
+    const greeting = getPersonalizedGreeting();
+    expect(greeting.isFirst).toBe(false);
+    expect(greeting.text.toLowerCase()).toContain('welcome back');
   });
 });

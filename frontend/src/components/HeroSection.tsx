@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import { ArrowDown, Star, Sparkles } from 'lucide-react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import { useVisitorMemory } from '../hooks/useVisitorMemory';
 import { EasterEggTrigger } from './EasterEgg';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
@@ -19,6 +20,7 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
+  const { greeting } = useVisitorMemory();
 
   return (
     <section
@@ -180,6 +182,25 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
             soundEnabled={soundEnabled}
             onChime={playChime}
           />
+
+          {/* Visitor greeting from Pip — personalized for returning visitors */}
+          <motion.div
+            initial={prefersReduced ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }}
+            style={{
+              marginTop: 'var(--sp-2)',
+              fontFamily: 'var(--font-story)',
+              fontStyle: 'italic',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+              maxWidth: '320px',
+              lineHeight: 1.5,
+            }}
+          >
+            {greeting.text}
+          </motion.div>
 
           {/* Interactive cursor tip badge */}
           <div

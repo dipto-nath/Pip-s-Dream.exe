@@ -21,9 +21,13 @@ export interface UseVisitorMemoryResult {
   profile: VisitorProfile | null;
   isFirstVisit: boolean;
   isReturning: boolean;
+  /** Alias for isReturning */
+  isReturningVisitor: boolean;
   greeting: { text: string; isFirst: boolean };
   /** Save the visitor's name (e.g. after a guestbook submission). */
   saveName: (name: string) => void;
+  /** Alias for saveName */
+  updateVisitorName: (name: string) => void;
   /** Save the visitor's favorite nightlight preset. */
   savePreset: (preset: LanternPreset) => void;
   /** Mark that the intro greeting has been shown. */
@@ -71,8 +75,10 @@ export function useVisitorMemory(): UseVisitorMemoryResult {
     profile,
     isFirstVisit,
     isReturning,
+    isReturningVisitor: isReturning,
     greeting,
     saveName,
+    updateVisitorName: saveName,
     savePreset,
     markGreeted: markGreetedCallback,
     refresh,

@@ -10,6 +10,7 @@ import { fetchGuestbookEntries, submitGuestbookEntry, GUESTBOOK_LIMITS } from '.
 import type { GuestbookEntry } from '../lib/guestbookService';
 import { loadEntries } from '../lib/guestbookStorage';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import { useVisitorMemory } from '../hooks/useVisitorMemory';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
 
@@ -24,6 +25,7 @@ export function DreamGuestbook() {
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
+  const { profile, isReturningVisitor, updateVisitorName } = useVisitorMemory();
   const statusRef = useRef<HTMLDivElement>(null);
   const formId = useId();
 
@@ -32,7 +34,7 @@ export function DreamGuestbook() {
     try { return loadEntries(); }
     catch { return []; }
   });
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() => profile?.name ?? '');
   const [message, setMessage] = useState('');
   const [nameError, setNameError] = useState('');
   const [msgError, setMsgError] = useState('');
@@ -98,6 +100,8 @@ export function DreamGuestbook() {
     if (result.success && result.entry) {
       // Prepend the new entry optimistically
       setEntries((prev) => [result.entry!, ...prev]);
+      // Remember the visitor's name for future visits
+      if (name.trim()) updateVisitorName(name.trim());
       setName('');
       setMessage('');
       setNameError('');
@@ -156,7 +160,25 @@ export function DreamGuestbook() {
             }}
           >
             Leave a dream message for Pip. It will be pinned to the nursery noticeboard
-            until you visit again.{' '}
+            until you visit again.{' '}{
+              isReturningVisitor && (
+                <motion.span
+                  initial={prefersReduced ? false : { opacity: 0, x: -4 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 'var(--sp-3)',
+                    fontFamily: 'var(--font-story)',
+                    fontStyle: 'italic',
+                    fontSize: '0.9rem',
+                    color: 'var(--accent)',
+                  }}
+                >
+                  Welcome back, {profile?.name || 'friend'}! Your last note still rests on the wall.
+                </motion.span>
+              )
+            }
             {backendOnline === true ? (
               <em style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
                 ✦ Connected to the nursery server — messages are shared with other visitors.
