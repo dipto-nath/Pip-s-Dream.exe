@@ -130,10 +130,7 @@ export function DreamDeliveryMap() {
   // Refs for scroll-driven dream navigation
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const lastStepTimeRef = useRef<number>(0);
-  const wheelAccumulatorRef = useRef<number>(0);
   const lastManualTimeRef = useRef<number>(0);
-  const touchStartYRef = useRef<number | null>(null);
 
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
@@ -158,161 +155,74 @@ export function DreamDeliveryMap() {
     }
   }, [soundEnabled, playChime]);
 
-  // 1. In-Map Wheel Scroll Handler (Desktop Trackpad & Mouse Wheel)
-  // Allows user to scroll through dreams 1 -> 2 -> 3 -> 4 -> 5 when hovering over map
+  // Viewport Scroll Progress Tracking for the Frozen Sticky Map
+  // 1. Stays on Dream 1 while approaching (never triggers early).
+  // 2. Freezes in the center/top of viewport once the map arrives.
+  // 3. Smoothly steps 1 -> 2 -> 3 -> 4 -> 5 as user scrolls through the track.
+  // 4. Automatically unfreezes after Dream 5 so page scrolling continues downward.
   useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
+    let ticking = false;
 
-    const onWheel = (e: WheelEvent) => {
-      if (isModalOpen) return;
-
-      const now = Date.now();
-      if (now - lastStepTimeRef.current < 260) {
-        return;
-      }
-
-      wheelAccumulatorRef.current += e.deltaY;
-      const WHEEL_THRESHOLD = 36;
-
-      if (wheelAccumulatorRef.current > WHEEL_THRESHOLD) {
-        wheelAccumulatorRef.current = 0;
-        if (selectedStopIndex < DREAM_STOPS.length - 1) {
-          e.preventDefault();
-          lastStepTimeRef.current = now;
-          lastManualTimeRef.current = now;
-          handleSelectStop(selectedStopIndex + 1);
-        }
-        // At stop 5 (last dream), allow page to scroll down naturally
-      } else if (wheelAccumulatorRef.current < -WHEEL_THRESHOLD) {
-        wheelAccumulatorRef.current = 0;
-        if (selectedStopIndex > 0) {
-          e.preventDefault();
-          lastStepTimeRef.current = now;
-          lastManualTimeRef.current = now;
-          handleSelectStop(selectedStopIndex - 1);
-        }
-        // At stop 1 (first dream), allow page to scroll up naturally
-      }
-    };
-
-    viewport.addEventListener('wheel', onWheel, { passive: false });
-    return () => {
-      viewport.removeEventListener('wheel', onWheel);
-    };
-  }, [selectedStopIndex, isModalOpen, handleSelectStop]);
-
-  // 2. In-Map Touch Swipe Gesture Handler (Mobile & Tablets)
-  // Allows user to swipe across map to step through dreams 1 -> 2 -> 3 -> 4 -> 5
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        touchStartYRef.current = e.touches[0].clientY;
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (isModalOpen || touchStartYRef.current === null) return;
-      if (e.touches.length !== 1) return;
-
-      const currentY = e.touches[0].clientY;
-      const deltaY = touchStartYRef.current - currentY; // positive = swipe up = next dream
-      const now = Date.now();
-      if (now - lastStepTimeRef.current < 300) return;
-
-      const SWIPE_THRESHOLD = 36;
-
-      if (deltaY > SWIPE_THRESHOLD) {
-        if (selectedStopIndex < DREAM_STOPS.length - 1) {
-          if (e.cancelable) e.preventDefault();
-          touchStartYRef.current = currentY;
-          lastStepTimeRef.current = now;
-          lastManualTimeRef.current = now;
-          handleSelectStop(selectedStopIndex + 1);
-        }
-      } else if (deltaY < -SWIPE_THRESHOLD) {
-        if (selectedStopIndex > 0) {
-          if (e.cancelable) e.preventDefault();
-          touchStartYRef.current = currentY;
-          lastStepTimeRef.current = now;
-          lastManualTimeRef.current = now;
-          handleSelectStop(selectedStopIndex - 1);
-        }
-      }
-    };
-
-    const onTouchEnd = () => {
-      touchStartYRef.current = null;
-    };
-
-    viewport.addEventListener('touchstart', onTouchStart, { passive: true });
-    viewport.addEventListener('touchmove', onTouchMove, { passive: false });
-    viewport.addEventListener('touchend', onTouchEnd, { passive: true });
-    viewport.addEventListener('touchcancel', onTouchEnd, { passive: true });
-
-    return () => {
-      viewport.removeEventListener('touchstart', onTouchStart);
-      viewport.removeEventListener('touchmove', onTouchMove);
-      viewport.removeEventListener('touchend', onTouchEnd);
-      viewport.removeEventListener('touchcancel', onTouchEnd);
-    };
-  }, [selectedStopIndex, isModalOpen, handleSelectStop]);
-
-  // 3. Viewport Scroll Progress Tracking for the Frozen Sticky Map
-  // Stays on Dream 1 while approaching, freezes on screen and steps 1->2->3->4->5, then unfreezes
-  useEffect(() => {
     const onWindowScroll = () => {
-      const track = wrapperRef.current?.closest('.project-map-sticky-track') as HTMLElement | null;
-      if (!track) return;
-      if (Date.now() - lastManualTimeRef.current < 1100) return;
-      if (isTouring) return;
+      if (ticking) return;
+      ticking = true;
 
-      const trackRect = track.getBoundingClientRect();
-      const card = track.querySelector('.project-card') as HTMLElement | null;
-      const cardRect = card ? card.getBoundingClientRect() : trackRect;
+      window.requestAnimationFrame(() => {
+        ticking = false;
+        const track = wrapperRef.current?.closest('.project-map-sticky-track') as HTMLElement | null;
+        if (!track) return;
+        if (isModalOpen) return;
+        if (Date.now() - lastManualTimeRef.current < 1100) return;
+        if (isTouring) return;
 
-      const stickyTop = cardRect.top;
-      const scrollDistance = trackRect.height - cardRect.height;
-      if (scrollDistance <= 0) return;
+        const trackRect = track.getBoundingClientRect();
+        const stickyBox = (track.querySelector('.project-map-sticky-box') || track.firstElementChild) as HTMLElement | null;
+        if (!stickyBox) return;
+        const stickyRect = stickyBox.getBoundingClientRect();
 
-      // 1. Approaching: Map has not reached freeze position yet
-      // Stay locked on Dream 1 (never triggers early)
-      if (trackRect.top > stickyTop + 24) {
-        if (selectedStopIndex !== 0) {
-          setSelectedStopIndex(0);
+        // The target top where the box freezes (from CSS clamp(58px, 8vh, 74px))
+        const targetTop = parseFloat(window.getComputedStyle(stickyBox).top) || 68;
+        const scrollDistance = trackRect.height - stickyRect.height;
+        if (scrollDistance <= 0) return;
+
+        // 1. Approaching: Map has not reached freeze position yet
+        // Stay locked on Dream 1 (never triggers early)
+        if (trackRect.top > targetTop + 8) {
+          if (selectedStopIndex !== 0) {
+            setSelectedStopIndex(0);
+          }
+          return;
         }
-        return;
-      }
 
-      // 2. Frozen on screen: Step smoothly through 5 dreams as user scrolls
-      const scrolled = stickyTop - trackRect.top;
-      const progress = Math.max(0, Math.min(1, scrolled / scrollDistance));
+        // 2. Frozen on screen: Step smoothly through 5 dreams as user scrolls
+        const scrolled = targetTop - trackRect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / scrollDistance));
 
-      const targetIndex = Math.min(
-        DREAM_STOPS.length - 1,
-        Math.floor(progress * DREAM_STOPS.length)
-      );
+        const targetIndex = Math.min(
+          DREAM_STOPS.length - 1,
+          Math.floor(progress * DREAM_STOPS.length)
+        );
 
-      if (targetIndex !== selectedStopIndex) {
-        setSelectedStopIndex(targetIndex);
-        setIsCardVisible(true);
-        const stop = DREAM_STOPS[targetIndex];
-        if (soundEnabled) {
-          playChime(stop.chimeFreq);
+        if (targetIndex !== selectedStopIndex) {
+          setSelectedStopIndex(targetIndex);
+          setIsCardVisible(true);
+          const stop = DREAM_STOPS[targetIndex];
+          if (soundEnabled) {
+            playChime(stop.chimeFreq);
+          }
         }
-      }
+      });
     };
 
     window.addEventListener('scroll', onWindowScroll, { passive: true });
+    window.addEventListener('resize', onWindowScroll, { passive: true });
     onWindowScroll();
 
     return () => {
       window.removeEventListener('scroll', onWindowScroll);
+      window.removeEventListener('resize', onWindowScroll);
     };
-  }, [selectedStopIndex, isTouring, soundEnabled, playChime]);
+  }, [selectedStopIndex, isTouring, isModalOpen, soundEnabled, playChime]);
 
   // Auto-tour through the lanterns
   useEffect(() => {
@@ -411,18 +321,23 @@ export function DreamDeliveryMap() {
 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             {/* 5 Route Stepper Indicator Dots */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} aria-label={`Route step ${selectedStopIndex + 1} of 5`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }} aria-label={`Route step ${selectedStopIndex + 1} of 5`}>
               {DREAM_STOPS.map((s, idx) => (
-                <div
+                <button
                   key={s.id}
+                  onClick={() => handleSelectStop(idx, true)}
+                  title={`Jump to Dream 0${idx + 1}: ${s.name}`}
+                  aria-label={`Jump to dream ${idx + 1}: ${s.name}`}
                   style={{
-                    width: idx === selectedStopIndex ? '16px' : '6px',
-                    height: '6px',
-                    borderRadius: '3px',
+                    width: idx === selectedStopIndex ? '18px' : '7px',
+                    height: '7px',
+                    borderRadius: '4px',
                     background: idx === selectedStopIndex ? 'var(--vintage-berry)' : 'var(--border-warm)',
                     transition: 'all 0.25s ease',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
                   }}
-                  aria-hidden="true"
                 />
               ))}
             </div>

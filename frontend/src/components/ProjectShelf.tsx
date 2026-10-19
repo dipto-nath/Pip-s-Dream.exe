@@ -174,35 +174,141 @@ export function ProjectShelf({ chaosMode }: ProjectShelfProps) {
 
             if (isMapProject) {
               return (
-                <div
+                <article
                   key={project.id}
-                  className="project-map-sticky-track"
+                  className={`project-card ${chaosMode ? '' : ''}`}
+                  aria-labelledby={`project-title-${project.id}`}
                   style={{
-                    height: 'clamp(1800px, 240vh, 2300px)',
+                    background: 'var(--surface-panel)',
+                    border: '2px solid var(--border-warm)',
+                    borderRadius: 'var(--radius-lg)',
+                    overflow: 'visible',
+                    boxShadow: chaosMode
+                      ? '5px 5px 0 var(--shadow-warm), 8px 8px 0 var(--border-warm)'
+                      : '3px 3px 0 var(--shadow-warm)',
+                    transition: 'box-shadow 0.25s, transform 0.25s',
                     position: 'relative',
-                    width: '100%',
                   }}
                 >
-                  <article
-                    className={`project-card ${chaosMode ? '' : ''}`}
-                    aria-labelledby={`project-title-${project.id}`}
+                  {/* Project header bar */}
+                  <div
                     style={{
-                      position: 'sticky',
-                      top: 'clamp(54px, 7vh, 78px)',
-                      background: 'var(--surface-panel)',
-                      border: '2px solid var(--border-warm)',
-                      borderRadius: 'var(--radius-lg)',
-                      overflow: 'hidden',
-                      boxShadow: chaosMode
-                        ? '5px 5px 0 var(--shadow-warm), 8px 8px 0 var(--border-warm)'
-                        : '3px 3px 0 var(--shadow-warm)',
-                      transition: 'box-shadow 0.25s, transform 0.25s',
-                      zIndex: 20,
+                      background: PROJECT_COLORS[i],
+                      padding: 'var(--sp-3) var(--sp-6)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 'var(--sp-3)',
+                      borderTopLeftRadius: 'calc(var(--radius-lg) - 2px)',
+                      borderTopRightRadius: 'calc(var(--radius-lg) - 2px)',
                     }}
                   >
-                    {cardBody}
-                  </article>
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontSize: '2rem',
+                          fontWeight: 700,
+                          color: 'rgba(255,255,255,0.3)',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {project.number}
+                      </span>
+                      <div>
+                        <h3
+                          id={`project-title-${project.id}`}
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            color: '#fff8f1',
+                            fontSize: 'clamp(1rem, 2.5vw, 1.4rem)',
+                            marginBottom: 0,
+                          }}
+                        >
+                          {project.title}
+                        </h3>
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-story)',
+                            fontStyle: 'italic',
+                            fontSize: '0.82rem',
+                            color: 'rgba(255,248,241,0.75)',
+                            margin: 0,
+                          }}
+                        >
+                          {project.tagline}
+                        </p>
+                      </div>
+                    </div>
+
+                    {chaosMode && (
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-ui)',
+                          fontSize: '0.7rem',
+                          background: 'rgba(255,255,255,0.2)',
+                          color: '#fff',
+                          padding: '3px 10px',
+                          borderRadius: 'var(--radius-pill)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✦ LIVE DEMO ✦
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Project body */}
+                  <div
+                    className="project-card-body"
+                    style={{
+                      padding: 'clamp(1rem, 2vw, var(--sp-6))',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 'var(--sp-5)',
+                      overflow: 'visible',
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-story)',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.92rem',
+                        lineHeight: 1.7,
+                        maxWidth: '70ch',
+                      }}
+                    >
+                      {project.description}
+                    </p>
+
+                    {/* Interactive component sticky track */}
+                    <div
+                      className="project-map-sticky-track"
+                      style={{
+                        height: 'clamp(2600px, 320vh, 3400px)',
+                        position: 'relative',
+                        width: '100%',
+                      }}
+                    >
+                      <div
+                        className="project-card-component-box project-map-sticky-box"
+                        style={{
+                          position: 'sticky',
+                          top: 'clamp(58px, 8vh, 74px)',
+                          background: 'var(--surface)',
+                          border: '1px dashed var(--border-warm)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: 'clamp(0.6rem, 1.6vw, var(--sp-5))',
+                          boxShadow: '0 8px 24px var(--control-shadow)',
+                          zIndex: 20,
+                        }}
+                      >
+                        {projectComponents[project.id]}
+                      </div>
+                    </div>
+                  </div>
+                </article>
               );
             }
 
