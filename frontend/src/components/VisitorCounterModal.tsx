@@ -28,8 +28,8 @@ interface VisitorCounterModalProps {
 }
 
 export function VisitorCounterModal({ isOpen: controlledIsOpen, onClose }: VisitorCounterModalProps) {
-  // If controlled externally, use props, otherwise self-managed
-  const [internalIsOpen, setInternalIsOpen] = useState(true);
+  // Default minimized: starts docked as badge, expands on click
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isVisible = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const [digits, setDigits] = useState<string>('-'.repeat(PAD_LENGTH));

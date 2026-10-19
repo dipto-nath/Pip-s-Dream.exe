@@ -138,11 +138,11 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Global Dream Visits Showcase Centerpiece */}
+        {/* Global Dream Visits Showcase Centerpiece (preserved for mobile version, hidden on desktop) */}
         <div
+          className="global-dream-visits-footer-section"
           style={{
             margin: 'var(--sp-8) 0 var(--sp-8)',
-            display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',

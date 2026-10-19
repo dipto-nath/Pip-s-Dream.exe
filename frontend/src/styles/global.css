@@ -691,3 +691,17 @@ button {
   user-select: none;
 }
 
+/* ── Global Dream Visits Showcase Centerpiece: Removed on desktop, preserved on mobile ── */
+@media (min-width: 769px) {
+  .global-dream-visits-footer-section {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .global-dream-visits-footer-section {
+    display: flex !important;
+  }
+}
+
+
