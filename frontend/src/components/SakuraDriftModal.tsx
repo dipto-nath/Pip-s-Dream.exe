@@ -1148,115 +1148,16 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
           {/* Right Status Readouts & Close Button */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
-            {/* Time Badge - Racing Timer */}
-            <div
-              style={{
-                background: 'linear-gradient(180deg, rgba(58, 40, 32, 0.95) 0%, rgba(38, 26, 20, 0.98) 100%)',
-                border: '1px solid rgba(212, 195, 167, 0.4)',
-                borderRadius: '10px',
-                padding: '3px 8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                whiteSpace: 'nowrap',
-                minWidth: '60px',
-                overflow: 'hidden',
-              }}
-            >
-              <span style={{ fontFamily: 'var(--font-ui, system-ui)', fontSize: '0.6rem', fontWeight: 700, color: 'rgba(212, 195, 167, 0.85)', letterSpacing: '0.06em' }}>LAP TIME</span>
-              <span style={{ fontFamily: 'var(--font-mono, monospace)', fontWeight: 700, color: '#FFF8F1', fontSize: '0.8rem' }}>
-                {hudTime}
-              </span>
-            </div>
-
-            {/* Drift Score Badge */}
-            <div
-              style={{
-                background: 'linear-gradient(180deg, rgba(163, 64, 99, 0.85) 0%, rgba(126, 40, 76, 0.9) 100%)',
-                border: '1px solid rgba(246, 169, 190, 0.45)',
-                borderRadius: '10px',
-                padding: '3px 8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.3), 0 0 4px rgba(246,169,190,0.2)',
-                whiteSpace: 'nowrap',
-                minWidth: '70px',
-                overflow: 'hidden',
-              }}
-            >
-              <span style={{ fontFamily: 'var(--font-ui, system-ui)', fontSize: '0.6rem', fontWeight: 800, color: '#FFF8F1', letterSpacing: '0.05em' }}>DRIFT</span>
-              <span style={{ fontFamily: 'var(--font-mono, monospace)', fontWeight: 700, color: '#F3C66F', fontSize: '0.74rem' }}>
-                x{hudMult}
-              </span>
-              <span style={{ fontFamily: 'var(--font-mono, monospace)', fontWeight: 800, color: '#FFF8F1', fontSize: '0.84rem' }}>
-                {hudScore.toLocaleString()}
-              </span>
-            </div>
+            <span className={styles.sdSpacer} />
+            <span className={styles.sdReadout}>TIME <b id="time">{hudTime}</b></span>
+            <span className={styles.sdReadout}>DRIFT <b id="drift">x{hudMult} {hudScore.toLocaleString()}</b></span>
 
             <button
               type="button"
+              className={styles.sdClose}
               onClick={onClose}
               title="Close (ESC)"
               aria-label="Close Sakura Drift game"
-              className="group"
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(67, 48, 39, 0.9) 0%, rgba(43, 29, 22, 0.95) 100%)',
-                border: '1px solid rgba(212, 195, 167, 0.45)',
-                color: '#FCEBD5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #F6A9BE 0%, #a34063 100%)';
-                e.currentTarget.style.borderColor = '#F6A9BE';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(246,169,190,0.4)';
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(67, 48, 39, 0.9) 0%, rgba(43, 29, 22, 0.95) 100%)';
-                e.currentTarget.style.borderColor = 'rgba(212, 195, 167, 0.45)';
-                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.25)';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              <X size={16} className="group-hover:rotate-90 transition-transform duration-150" />
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              title="Close (ESC)"
-              aria-label="Close Sakura Drift game"
-              style={{
-                width: '30px',
-                height: '30px',
-                borderRadius: '50%',
-                background: 'rgba(67, 48, 39, 0.9)',
-                border: '1px solid rgba(222, 195, 167, 0.45)',
-                color: '#FCEBD5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#a34063';
-                e.currentTarget.style.borderColor = '#F6A9BE';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(67, 48, 39, 0.9)';
-                e.currentTarget.style.borderColor = 'rgba(222, 195, 167, 0.45)';
-              }}
             >
               <X size={15} />
             </button>

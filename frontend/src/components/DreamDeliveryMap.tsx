@@ -4,7 +4,7 @@
 // Fully responsive for Desktop, Tablet, and Mobile
 // =============================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, ArrowRight, Play, Pause, ArrowLeft, Volume2, BookOpen } from 'lucide-react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
@@ -127,6 +127,14 @@ export function DreamDeliveryMap() {
   const [manualSide, setManualSide] = useState<'auto' | 'left' | 'right'>('auto');
   const tourTimerRef = useRef<number | null>(null);
 
+  // Refs for scroll-driven dream navigation
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const lastStepTimeRef = useRef<number>(0);
+  const wheelAccumulatorRef = useRef<number>(0);
+  const lastManualTimeRef = useRef<number>(0);
+  const touchStartYRef = useRef<number | null>(null);
+
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
@@ -135,8 +143,8 @@ export function DreamDeliveryMap() {
   // Dynamically dock card on the left when stop is on the right (like Stop 5 castle) so no lantern is hidden on desktop
   const isCardOnLeft = manualSide === 'auto' ? currentStop.x > 50 : manualSide === 'left';
 
-  // Handle selecting a lantern
-  const handleSelectStop = (index: number) => {
+  // Handle selecting a lantern (supports click as secondary and scroll motion as primary)
+  const handleSelectStop = useCallback((index: number, isManual = false) => {
     setSelectedStopIndex(index);
     setIsCardVisible(true);
     setManualSide('auto'); // auto-dodge to opposite side of selected lantern
@@ -144,7 +152,155 @@ export function DreamDeliveryMap() {
     if (soundEnabled) {
       playChime(stop.chimeFreq);
     }
-  };
+    if (isManual) {
+      lastManualTimeRef.current = Date.now();
+      setIsTouring(false);
+    }
+  }, [soundEnabled, playChime]);
+
+  // 1. In-Map Wheel Scroll Handler (Desktop Trackpad & Mouse Wheel)
+  // Allows user to scroll through dreams 1 -> 2 -> 3 -> 4 -> 5 when hovering over map
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (isModalOpen) return;
+
+      const now = Date.now();
+      if (now - lastStepTimeRef.current < 260) {
+        return;
+      }
+
+      wheelAccumulatorRef.current += e.deltaY;
+      const WHEEL_THRESHOLD = 36;
+
+      if (wheelAccumulatorRef.current > WHEEL_THRESHOLD) {
+        wheelAccumulatorRef.current = 0;
+        if (selectedStopIndex < DREAM_STOPS.length - 1) {
+          e.preventDefault();
+          lastStepTimeRef.current = now;
+          lastManualTimeRef.current = now;
+          handleSelectStop(selectedStopIndex + 1);
+        }
+        // At stop 5 (last dream), allow page to scroll down naturally
+      } else if (wheelAccumulatorRef.current < -WHEEL_THRESHOLD) {
+        wheelAccumulatorRef.current = 0;
+        if (selectedStopIndex > 0) {
+          e.preventDefault();
+          lastStepTimeRef.current = now;
+          lastManualTimeRef.current = now;
+          handleSelectStop(selectedStopIndex - 1);
+        }
+        // At stop 1 (first dream), allow page to scroll up naturally
+      }
+    };
+
+    viewport.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      viewport.removeEventListener('wheel', onWheel);
+    };
+  }, [selectedStopIndex, isModalOpen, handleSelectStop]);
+
+  // 2. In-Map Touch Swipe Gesture Handler (Mobile & Tablets)
+  // Allows user to swipe across map to step through dreams 1 -> 2 -> 3 -> 4 -> 5
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartYRef.current = e.touches[0].clientY;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (isModalOpen || touchStartYRef.current === null) return;
+      if (e.touches.length !== 1) return;
+
+      const currentY = e.touches[0].clientY;
+      const deltaY = touchStartYRef.current - currentY; // positive = swipe up = next dream
+      const now = Date.now();
+      if (now - lastStepTimeRef.current < 300) return;
+
+      const SWIPE_THRESHOLD = 36;
+
+      if (deltaY > SWIPE_THRESHOLD) {
+        if (selectedStopIndex < DREAM_STOPS.length - 1) {
+          if (e.cancelable) e.preventDefault();
+          touchStartYRef.current = currentY;
+          lastStepTimeRef.current = now;
+          lastManualTimeRef.current = now;
+          handleSelectStop(selectedStopIndex + 1);
+        }
+      } else if (deltaY < -SWIPE_THRESHOLD) {
+        if (selectedStopIndex > 0) {
+          if (e.cancelable) e.preventDefault();
+          touchStartYRef.current = currentY;
+          lastStepTimeRef.current = now;
+          lastManualTimeRef.current = now;
+          handleSelectStop(selectedStopIndex - 1);
+        }
+      }
+    };
+
+    const onTouchEnd = () => {
+      touchStartYRef.current = null;
+    };
+
+    viewport.addEventListener('touchstart', onTouchStart, { passive: true });
+    viewport.addEventListener('touchmove', onTouchMove, { passive: false });
+    viewport.addEventListener('touchend', onTouchEnd, { passive: true });
+    viewport.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+    return () => {
+      viewport.removeEventListener('touchstart', onTouchStart);
+      viewport.removeEventListener('touchmove', onTouchMove);
+      viewport.removeEventListener('touchend', onTouchEnd);
+      viewport.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [selectedStopIndex, isModalOpen, handleSelectStop]);
+
+  // 3. Viewport Scroll Progress Tracking (Universal Page Scroll)
+  // As the section scrolls through the viewport, steps from dream 1 through 5
+  useEffect(() => {
+    const onWindowScroll = () => {
+      if (!wrapperRef.current) return;
+      // If user recently interacted directly (within 1.1s), respect their action
+      if (Date.now() - lastManualTimeRef.current < 1100) return;
+      if (isTouring) return;
+
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+
+      // Active zone: map moves through comfortable viewing center
+      const startY = vh * 0.70;
+      const endY = vh * 0.08;
+      const totalDist = startY - endY;
+      if (totalDist <= 0) return;
+
+      const rawProgress = (startY - rect.top) / totalDist;
+      if (rawProgress >= 0 && rawProgress <= 1) {
+        const targetIndex = Math.min(
+          DREAM_STOPS.length - 1,
+          Math.floor(rawProgress * DREAM_STOPS.length)
+        );
+        if (targetIndex !== selectedStopIndex) {
+          setSelectedStopIndex(targetIndex);
+          setIsCardVisible(true);
+          const stop = DREAM_STOPS[targetIndex];
+          if (soundEnabled) {
+            playChime(stop.chimeFreq);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', onWindowScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onWindowScroll);
+    };
+  }, [selectedStopIndex, isTouring, soundEnabled, playChime]);
 
   // Auto-tour through the lanterns
   useEffect(() => {
@@ -177,6 +333,7 @@ export function DreamDeliveryMap() {
 
   return (
     <div
+      ref={wrapperRef}
       className="follow-the-lanterns-wrapper"
       style={{
         position: 'relative',
@@ -220,20 +377,50 @@ export function DreamDeliveryMap() {
           Follow the Lanterns <span style={{ color: 'var(--accent)' }}>✦</span>
         </h2>
 
-        <p
+        <div
           style={{
-            fontSize: 'clamp(0.88rem, 1.6vw, 1.05rem)',
-            fontStyle: 'italic',
-            color: 'var(--text-muted)',
-            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px',
           }}
         >
-          Click a lantern to follow a dream...
-        </p>
+          <p
+            style={{
+              fontSize: 'clamp(0.88rem, 1.6vw, 1.05rem)',
+              fontStyle: 'italic',
+              color: 'var(--text-muted)',
+              margin: 0,
+            }}
+          >
+            Scroll or click a lantern to follow the dream route...
+          </p>
+
+          <span
+            style={{
+              fontFamily: 'var(--font-ui)',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              color: 'var(--accent)',
+              background: 'var(--control-surface)',
+              border: '1px solid var(--border-warm)',
+              padding: '3px 10px',
+              borderRadius: 'var(--radius-pill)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              boxShadow: '0 2px 4px var(--control-shadow)',
+            }}
+          >
+            <span>Stop 0{selectedStopIndex + 1} of 05</span>
+          </span>
+        </div>
       </div>
 
       {/* Main Map Canvas Area */}
       <div
+        ref={viewportRef}
         className="dream-map-viewport"
         style={{
           position: 'relative',
@@ -328,7 +515,7 @@ export function DreamDeliveryMap() {
           return (
             <button
               key={stop.id}
-              onClick={() => handleSelectStop(index)}
+              onClick={() => handleSelectStop(index, true)}
               title={`${stop.name} (Click to inspect)`}
               aria-label={`Lantern ${index + 1}: ${stop.name}`}
               className={`map-lantern-pin ${isSelected ? 'map-lantern-pin--active' : ''}`}
@@ -852,7 +1039,7 @@ export function DreamDeliveryMap() {
             return (
               <button
                 key={stop.id}
-                onClick={() => handleSelectStop(index)}
+                onClick={() => handleSelectStop(index, true)}
                 style={{
                   flexShrink: 0,
                   display: 'inline-flex',
