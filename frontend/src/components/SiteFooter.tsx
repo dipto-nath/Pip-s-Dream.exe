@@ -135,9 +135,35 @@ export function SiteFooter() {
               </a>
               .
             </p>
-            <div style={{ marginTop: 'var(--sp-5)' }}>
-              <HitCounterOdometer />
-            </div>
+          </div>
+        </div>
+
+        {/* Global Dream Visits Showcase Centerpiece */}
+        <div
+          style={{
+            margin: 'var(--sp-8) 0 var(--sp-8)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}
+        >
+          {/* Subtle ambient halo glow behind odometer */}
+          <div
+            style={{
+              position: 'absolute',
+              width: 'min(520px, 90%)',
+              height: '160px',
+              background: 'radial-gradient(ellipse at center, rgba(243, 198, 111, 0.14) 0%, rgba(200, 62, 91, 0.06) 50%, transparent 75%)',
+              filter: 'blur(28px)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+            aria-hidden="true"
+          />
+          <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <HitCounterOdometer />
           </div>
         </div>
 
