@@ -24,6 +24,8 @@ export interface VisitorProfile {
   favoritePreset?: LanternPreset;
   /** Whether the first-visit greeting has been shown. */
   greeted: boolean;
+  /** Best score in Sakura Drift mini-game. */
+  driftHighScore?: number;
 }
 
 /**
@@ -38,6 +40,7 @@ function isValidProfile(obj: unknown): obj is VisitorProfile {
     typeof p.lastSeen === 'number' && isFinite(p.lastSeen) &&
     typeof p.greeted === 'boolean' &&
     (p.name === undefined || (typeof p.name === 'string' && p.name.length > 0)) &&
+    (p.driftHighScore === undefined || (typeof p.driftHighScore === 'number' && p.driftHighScore >= 0)) &&
     (p.favoritePreset === undefined ||
       (typeof p.favoritePreset === 'string' &&
         ['whisper', 'moonbeam', 'stardust'].includes(p.favoritePreset)))
@@ -110,6 +113,20 @@ export function updateVisitorName(name: string): VisitorProfile | null {
 }
 
 /**
+ * Update the visitor's remembered best score in Sakura Drift.
+ */
+export function updateDriftScore(score: number): VisitorProfile | null {
+  const profile = loadProfile();
+  if (!profile) return null;
+  const currentBest = profile.driftHighScore ?? 0;
+  if (score > currentBest) {
+    profile.driftHighScore = Math.floor(score);
+    saveProfile(profile);
+  }
+  return profile;
+}
+
+/**
  * Persist the visitor's favorite nightlight preset.
  */
 export function saveFavoritePreset(preset: LanternPreset): void {
@@ -152,58 +169,63 @@ function getTimeOfDay(): 'dawn' | 'morning' | 'afternoon' | 'evening' | 'night' 
 /**
  * Generate a personalized greeting based on the visitor's profile
  * and visit history. Pip's voice is sleepy, curious, and warm.
+ * If signed in the guestbook -> greets by name.
+ * If new user or not signed in -> greets warmly as 'friend'.
  */
-export function getPersonalizedGreeting(): { text: string; isFirst: boolean } {
+export function getPersonalizedGreeting(): { text: string; isFirst: boolean; visitorName?: string } {
   const profile = loadProfile();
   const count = getVisitCount();
   const timeOfDay = getTimeOfDay();
 
-  // ── First visit ──
-  if (!profile || count <= 1) {
-    const openings = {
-      morning: 'Good morning, little dreamer!',
-      afternoon: 'Hello there, traveler!',
-      evening: 'Ah, a visitor at dusk. How lovely.',
-      night: 'A midnight guest... Pip was hoping someone would come.',
-      dawn: 'Even the stars are fading. Stay for a lullaby?',
-    };
-    return { text: openings[timeOfDay], isFirst: true };
-  }
-
-  // ── Returning visitor with a remembered name ──
-  const name = profile.name;
+  // ── Visitor with a remembered guestbook name ──
+  const name = profile?.name;
   if (name) {
     if (count >= 10) {
       return {
         text: `Oh, ${name}... you keep coming back. The nursery feels warmer when you do. Have you found the secret star yet?`,
         isFirst: false,
+        visitorName: name,
       };
     }
     if (count >= 5) {
       return {
         text: `Welcome back, ${name}! Pip's been busy with the dream deliveries. The lullaby sounds sweeter with you listening.`,
         isFirst: false,
+        visitorName: name,
       };
     }
     return {
-      text: `Welcome back, ${name}! I've been polishing the lanterns for you.`,
+      text: `Welcome back, ${name}! I've been polishing the lanterns and tuning the lullabies for you.`,
       isFirst: false,
+      visitorName: name,
     };
   }
 
-  // ── Returning visitor, no name yet ──
+  // ── New visitor or visitor who has not signed the guestbook yet -> Greet as friend ──
+  if (!profile || count <= 1) {
+    const openings = {
+      morning: 'Good morning, friend! The kettle is warm and the lullabies are humming.',
+      afternoon: 'Hello there, friend! Pip is preparing today\'s dream lantern routes.',
+      evening: 'Good evening, friend! The nursery lanterns are glowing warmer already.',
+      night: 'A midnight guest... Welcome, friend! Pip was hoping someone would visit the nursery desk.',
+      dawn: 'Welcome, friend! Even as stars fade into dawn, the music box keeps playing for you.',
+    };
+    return { text: openings[timeOfDay], isFirst: true };
+  }
+
+  // Returning visitor who hasn't signed guestbook yet
   if (count >= 5) {
     return {
-      text: 'You return often, little one. Pip remembers your footsteps. Have you signed the noticeboard yet?',
+      text: 'Welcome back, friend! Pip remembers your footsteps. Have you signed the dream guestbook yet?',
       isFirst: false,
     };
   }
   const returns = {
-    morning: 'Back so early! The lullabies haven\'t even finished warming up.',
-    afternoon: 'Hello again! Pip left a small dream between the last lullaby and first light.',
-    evening: 'You\'re back! The lanterns are glowing warmer already.',
-    night: 'A familiar shadow. Pip wondered when you\'d return.',
-    dawn: 'Back at the edge of morning? The stars are fading, but the music box still plays.',
+    morning: 'Back so early, friend! The lullabies haven\'t even finished warming up.',
+    afternoon: 'Hello again, friend! Pip left a small dream between the last lullaby and first light.',
+    evening: 'You\'re back, friend! The lanterns are glowing warmer already.',
+    night: 'A familiar shadow in the doorway. Welcome back, friend! Pip wondered when you\'d return.',
+    dawn: 'Back at the edge of morning, friend? The stars are fading, but the music box still plays.',
   };
   return { text: returns[timeOfDay], isFirst: false };
 }

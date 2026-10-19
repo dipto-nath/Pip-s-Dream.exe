@@ -21,12 +21,13 @@ const SoundContext = createContext<SoundContextValue>({
 export function SoundProvider({ children }: { children: React.ReactNode }) {
   const [soundEnabled, setSoundEnabled] = usePersistentState<boolean>(
     'pip-sound',
-    false,
+    true,
     (v): v is boolean => typeof v === 'boolean',
   );
 
   useEffect(() => {
     const engine = getAudioEngine();
+    engine.initUnlockListeners();
     engine.setMuted(!soundEnabled);
   }, [soundEnabled]);
 
@@ -38,7 +39,17 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   function toggleSound() {
-    setSoundEnabled((prev) => !prev);
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      const engine = getAudioEngine();
+      engine.setMuted(!next);
+      if (next) {
+        engine.unlock().then(() => {
+          engine.playChime(880);
+        });
+      }
+      return next;
+    });
   }
 
   return (

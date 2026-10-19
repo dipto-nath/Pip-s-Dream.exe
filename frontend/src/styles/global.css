@@ -37,8 +37,30 @@ body {
 
 [data-theme="dream"] body,
 [data-theme="dream"] {
-  background-image: radial-gradient(circle, rgba(92,58,42,0.4) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(circle, rgba(245, 158, 11, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Dream Mode: button and UI refinements ── */
+[data-theme="dream"] .btn-primary {
+  box-shadow: 0 2px 0 var(--shadow-warm), inset 0 1px 0 rgba(255,215,0,0.25);
+}
+
+[data-theme="dream"] .btn-primary:hover {
+  box-shadow: 0 4px 0 var(--shadow-warm), inset 0 1px 0 rgba(255,215,0,0.3);
+}
+
+[data-theme="dream"] .btn-primary:active {
+  box-shadow: 0 1px 0 var(--shadow-warm);
+}
+
+[data-theme="dream"] .btn-secondary {
+  box-shadow: 0 2px 0 var(--shadow-warm);
+}
+
+/* Retro window traffic-light dots need lighter borders in dark mode */
+[data-theme="dream"] .retro-window__dot {
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Typography */
@@ -191,20 +213,20 @@ button {
   padding: var(--sp-3) var(--sp-6);
   cursor: pointer;
   transition: background var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 0 2px 0 var(--shadow-warm), inset 0 1px 0 rgba(255,255,255,0.25);
   text-decoration: none;
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 0 4px 0 var(--shadow-warm), inset 0 1px 0 rgba(255,255,255,0.25);
   color: #fff;
 }
 
 .btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+  box-shadow: 0 1px 0 var(--shadow-warm);
 }
 
 [data-theme="dream"] .btn-primary {

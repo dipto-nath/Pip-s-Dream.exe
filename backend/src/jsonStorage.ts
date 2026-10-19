@@ -6,7 +6,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import crypto from 'node:crypto';
-import type { GuestbookEntry, VisitorStats, VisitRecord } from './types';
+import type { GuestbookEntry, VisitorStats, VisitRecord, ScoreRecord } from './types';
 import type { GuestbookStorage, VisitStorage } from './storage';
 
 export interface RateLimitRecord {
@@ -17,6 +17,7 @@ export interface RateLimitRecord {
 export interface JsonDataFile {
   guestbook_entries: GuestbookEntry[];
   visits: VisitRecord[];
+  scores?: ScoreRecord[];
   rate_limits?: RateLimitRecord[];
 }
 
@@ -73,11 +74,12 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
       return {
         guestbook_entries: parsed.guestbook_entries ?? [],
         visits: parsed.visits ?? [],
+        scores: parsed.scores ?? [],
         rate_limits: parsed.rate_limits ?? [],
       };
     } catch (err: unknown) {
       if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
-        return { guestbook_entries: [], visits: [], rate_limits: [] };
+        return { guestbook_entries: [], visits: [], scores: [], rate_limits: [] };
       }
       throw err;
     }
@@ -182,6 +184,38 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
       await this.writeData(data);
       return { counted: true, total: data.visits.length };
     });
+  }
+
+  // ── Scores (Sakura Drift Mini-Game) ──
+
+  async saveScore(score: number, nickname?: string, laps?: number): Promise<{ success: boolean; best: number }> {
+    return this.withFileLock(async () => {
+      const data = await this.readData();
+      const record: ScoreRecord = {
+        id: generateId(),
+        nickname: nickname?.trim().slice(0, 24) || undefined,
+        score: Math.floor(score),
+        laps: laps ?? 1,
+        created_at: new Date().toISOString(),
+      };
+      data.scores = data.scores ?? [];
+      data.scores.push(record);
+      // Keep top 100 descending
+      data.scores.sort((a, b) => b.score - a.score);
+      if (data.scores.length > 100) data.scores = data.scores.slice(0, 100);
+      await this.writeData(data);
+      const best = data.scores[0]?.score ?? record.score;
+      return { success: true, best };
+    });
+  }
+
+  async getScores(limit = 10): Promise<{ top_scores: ScoreRecord[]; total_plays: number }> {
+    const data = await this.readData();
+    const scores = data.scores ?? [];
+    return {
+      top_scores: scores.slice(0, limit),
+      total_plays: scores.length,
+    };
   }
 
   async isHealthy(): Promise<boolean> {

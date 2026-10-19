@@ -20,6 +20,7 @@ export function LullabyLab() {
   async function handlePlay() {
     if (currentlyPlaying) return;
     const engine = getAudioEngine();
+    await engine.unlock();
     if (!soundEnabled) {
       setSoundEnabled(true);
     }
@@ -60,7 +61,11 @@ export function LullabyLab() {
             alt="Pip's tiny music box — a small ornate box with stars carved into the lid"
             loading="lazy"
             animate={currentlyPlaying && !prefersReduced ? { rotate: [0, 2, -2, 0] } : { rotate: 0 }}
-            transition={{ repeat: Infinity, duration: 0.5, ease: 'easeInOut' }}
+            transition={
+              currentlyPlaying && !prefersReduced
+                ? { repeat: Infinity, duration: 0.5, ease: 'easeInOut' }
+                : { duration: 0.2, ease: 'easeOut' }
+            }
             style={{
               width: '100%',
               height: 'auto',

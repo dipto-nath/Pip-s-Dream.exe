@@ -94,6 +94,32 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/api/scores') {
+      if (method === 'GET') {
+        const limit = url.query.limit ? Number(url.query.limit) : 10;
+        const result = await storage.getScores(limit);
+        sendJson(res, 200, { success: true, data: result });
+        return;
+      }
+      if (method === 'POST') {
+        const raw = await readBody(req);
+        let input: { score?: number; nickname?: string; laps?: number };
+        try { input = JSON.parse(raw); } catch {
+          sendJson(res, 400, { success: false, error: 'Invalid JSON' });
+          return;
+        }
+        if (typeof input.score !== 'number' || !isFinite(input.score) || input.score < 0) {
+          sendJson(res, 400, { success: false, error: 'Valid positive score required' });
+          return;
+        }
+        const result = await storage.saveScore(input.score, input.nickname, input.laps);
+        sendJson(res, 200, { success: true, data: result });
+        return;
+      }
+      sendJson(res, 405, { success: false, error: 'Method not allowed' });
+      return;
+    }
+
     sendJson(res, 404, { success: false, error: 'Not found' });
   } catch {
     sendJson(res, 500, { success: false, error: 'Internal error' });

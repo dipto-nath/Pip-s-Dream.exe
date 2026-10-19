@@ -6,6 +6,7 @@
 import { Volume2, VolumeX, Sun, Moon, Zap, ZapOff } from 'lucide-react';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { getAudioEngine } from '../lib/audioEngine';
 import type { Theme } from '../lib/types';
 
@@ -14,9 +15,11 @@ interface SiteHeaderProps {
   onThemeToggle: () => void;
   chaosMode: boolean;
   onChaosToggle: () => void;
+  onPlayGame?: () => void;
 }
 
-export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle }: SiteHeaderProps) {
+export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle, onPlayGame }: SiteHeaderProps) {
+  const isMobile = useIsMobile();
   const { soundEnabled, toggleSound } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
 
@@ -61,19 +64,19 @@ export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle }: S
           <span
             style={{
               width: 9, height: 9, borderRadius: '50%',
-              background: '#ff6b6b', border: '1px solid rgba(0,0,0,0.2)',
+              background: '#ff6b6b', border: '1px solid var(--dot-border)',
             }}
           />
           <span
             style={{
               width: 9, height: 9, borderRadius: '50%',
-              background: '#fbbf24', border: '1px solid rgba(0,0,0,0.2)',
+              background: '#fbbf24', border: '1px solid var(--dot-border)',
             }}
           />
           <span
             style={{
               width: 9, height: 9, borderRadius: '50%',
-              background: '#68d391', border: '1px solid rgba(0,0,0,0.2)',
+              background: '#68d391', border: '1px solid var(--dot-border)',
             }}
           />
         </div>
@@ -186,6 +189,32 @@ export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle }: S
 
         {/* Controls */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+          {/* Sakura Mini-Game button */}
+          {onPlayGame && (
+            <button
+              onClick={onPlayGame}
+              title={isMobile ? "Play Sakura Cloud Hop Mini-Game" : "Play Sakura Drift Mini-Game"}
+              style={{
+                background: 'rgba(246, 169, 190, 0.16)',
+                border: '1px solid rgba(246, 169, 190, 0.45)',
+                borderRadius: 'var(--radius-pill, 20px)',
+                color: '#f6a9be',
+                padding: '4px 10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.74rem',
+                fontFamily: 'var(--font-ui)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>🌸</span>
+              <span style={{ color: '#fcebd5' }}>{isMobile ? 'Sakura Hop' : 'Sakura Drift'}</span>
+            </button>
+          )}
+
           {/* Sound toggle */}
           <button
             onClick={handleSoundToggle}

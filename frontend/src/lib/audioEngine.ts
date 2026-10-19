@@ -20,7 +20,7 @@ class PipAudioEngine {
     return typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext: unknown }).webkitAudioContext !== 'undefined';
   }
 
-  private getContext(): AudioContext | null {
+  public getContext(): AudioContext | null {
     if (!this.isSupported) return null;
     if (!this.ctx) {
       try {
@@ -36,7 +36,7 @@ class PipAudioEngine {
     return this.ctx;
   }
 
-  private async resumeContext(): Promise<boolean> {
+  public async resumeContext(): Promise<boolean> {
     const ctx = this.getContext();
     if (!ctx) return false;
     if (ctx.state === 'suspended') {
@@ -47,6 +47,27 @@ class PipAudioEngine {
       }
     }
     return ctx.state === 'running';
+  }
+
+  /**
+   * Unlock AudioContext on direct user interaction (click, keydown, touch)
+   */
+  public async unlock(): Promise<boolean> {
+    return this.resumeContext();
+  }
+
+  /**
+   * Auto-unlock Web Audio on the very first user interaction anywhere on the window
+   */
+  public initUnlockListeners(): void {
+    if (typeof window === 'undefined') return;
+    const unlockHandler = () => {
+      this.unlock().catch(() => {});
+      const events = ['click', 'touchstart', 'keydown', 'pointerdown'];
+      events.forEach((evt) => window.removeEventListener(evt, unlockHandler));
+    };
+    const events = ['click', 'touchstart', 'keydown', 'pointerdown'];
+    events.forEach((evt) => window.addEventListener(evt, unlockHandler, { once: true, passive: true }));
   }
 
   get audioState(): AudioState {

@@ -242,8 +242,8 @@ export function DreamDeliveryMap() {
           borderRadius: 'clamp(0.85rem, 2vw, 1.5rem)',
           overflow: 'hidden',
           border: '2px solid var(--border-warm)',
-          boxShadow: '0 16px 40px rgba(184, 115, 51, 0.12), 0 4px 12px rgba(0,0,0,0.06)',
-          background: '#ebd5cb',
+          boxShadow: '0 16px 40px rgba(184, 115, 51, 0.12), 0 4px 12px var(--control-shadow)',
+          background: 'var(--surface-muted)',
           userSelect: 'none',
           WebkitUserSelect: 'none',
         }}
@@ -378,8 +378,8 @@ export function DreamDeliveryMap() {
                   transform: isSelected ? 'scale(1.18)' : 'scale(1)',
                   transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   filter: isSelected
-                    ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.95)) drop-shadow(0 4px 6px rgba(0,0,0,0.3))'
-                    : 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))',
+                    ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.95)) drop-shadow(0 4px 6px var(--shadow-deep))'
+                    : 'drop-shadow(0 2px 4px var(--shadow-deep))',
                 }}
               >
                 {/* SVG Lantern */}
@@ -444,7 +444,7 @@ export function DreamDeliveryMap() {
                   left: '50%',
                   transform: 'translateX(-50%)',
                   background: isSelected ? 'var(--vintage-berry)' : 'rgba(40, 24, 30, 0.85)',
-                  color: '#fff',
+                  color: 'var(--body-text)',
                   fontFamily: 'var(--font-ui)',
                   fontSize: '0.62rem',
                   fontWeight: 700,
@@ -452,9 +452,9 @@ export function DreamDeliveryMap() {
                   borderRadius: '10px',
                   border: isSelected
                     ? '1px solid rgba(251, 191, 36, 0.8)'
-                    : '1px solid rgba(255,255,255,0.2)',
+                    : '1px solid var(--border-warm)',
                   whiteSpace: 'nowrap',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  boxShadow: '0 2px 4px var(--control-shadow)',
                 }}
               >
                 0{index + 1}
@@ -522,7 +522,7 @@ export function DreamDeliveryMap() {
                 height: '100%',
                 objectFit: 'contain',
                 filter:
-                  'drop-shadow(0 6px 14px rgba(0,0,0,0.32)) drop-shadow(0 0 10px rgba(251, 191, 36, 0.75))',
+                  'drop-shadow(0 6px 14px var(--shadow-warm)) drop-shadow(0 0 10px rgba(251, 191, 36, 0.75))',
               }}
             />
           </div>
@@ -544,13 +544,13 @@ export function DreamDeliveryMap() {
                 left: isCardOnLeft ? 'clamp(12px, 3%, 24px)' : 'auto',
                 right: isCardOnLeft ? 'auto' : 'clamp(12px, 3%, 24px)',
                 width: 'clamp(240px, 28vw, 320px)',
-                background: 'rgba(255, 252, 246, 0.94)',
+                background: 'var(--control-surface)',
                 backdropFilter: 'blur(16px) saturate(160%)',
                 WebkitBackdropFilter: 'blur(16px) saturate(160%)',
-                border: '1.5px solid rgba(255, 255, 255, 0.95)',
+                border: '1.5px solid var(--border-warm)',
                 borderRadius: 'clamp(1rem, 1.8vw, 1.35rem)',
                 boxShadow:
-                  '0 20px 40px rgba(50, 28, 38, 0.22), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 1px #fff',
+                  '0 20px 40px var(--shadow-warm), 0 4px 12px var(--control-shadow), inset 0 1px 1px var(--control-border)',
                 padding: 'clamp(12px, 1.4vw, 16px)',
                 zIndex: 10,
                 display: 'flex',
@@ -566,7 +566,7 @@ export function DreamDeliveryMap() {
                   aspectRatio: '16 / 9',
                   borderRadius: 'clamp(0.6rem, 1.2vw, 0.85rem)',
                   overflow: 'hidden',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.12)',
+                  boxShadow: '0 4px 10px var(--control-shadow)',
                 }}
               >
                 <img
@@ -592,10 +592,10 @@ export function DreamDeliveryMap() {
                     width: '24px',
                     height: '24px',
                     borderRadius: '50%',
-                    background: 'rgba(20, 14, 24, 0.65)',
+                    background: 'var(--surface-inset)',
                     backdropFilter: 'blur(4px)',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    color: 'var(--body-text)',
+                    border: '1px solid var(--control-border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -605,11 +605,11 @@ export function DreamDeliveryMap() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'scale(1.1)';
-                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.9)';
+                    e.currentTarget.style.background = 'var(--surface-panel)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.65)';
+                    e.currentTarget.style.background = 'var(--surface-inset)';
                   }}
                 >
                   ⇄
@@ -627,10 +627,10 @@ export function DreamDeliveryMap() {
                     width: '24px',
                     height: '24px',
                     borderRadius: '50%',
-                    background: 'rgba(20, 14, 24, 0.65)',
+                    background: 'var(--surface-inset)',
                     backdropFilter: 'blur(4px)',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    color: 'var(--body-text)',
+                    border: '1px solid var(--control-border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -639,11 +639,11 @@ export function DreamDeliveryMap() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'scale(1.1)';
-                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.9)';
+                    e.currentTarget.style.background = 'var(--surface-panel)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.background = 'rgba(20, 14, 24, 0.65)';
+                    e.currentTarget.style.background = 'var(--surface-inset)';
                   }}
                 >
                   <X size={14} />
@@ -689,7 +689,7 @@ export function DreamDeliveryMap() {
                   justifyContent: 'center',
                   gap: '6px',
                   background: 'var(--vintage-berry)',
-                  color: '#fff',
+                  color: 'var(--body-text)',
                   fontFamily: 'var(--font-ui)',
                   fontSize: 'clamp(0.78rem, 0.95vw, 0.86rem)',
                   fontWeight: 600,
@@ -697,7 +697,7 @@ export function DreamDeliveryMap() {
                   borderRadius: 'var(--radius-pill)',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(163, 64, 99, 0.28)',
+                  boxShadow: '0 4px 12px var(--shadow-warm)',
                   transition: 'transform 0.18s, background 0.18s, box-shadow 0.18s',
                   width: 'fit-content',
                 }}
@@ -707,7 +707,7 @@ export function DreamDeliveryMap() {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(163, 64, 99, 0.28)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px var(--shadow-warm)';
                 }}
               >
                 <span>View Dream</span>
@@ -727,9 +727,9 @@ export function DreamDeliveryMap() {
               top: '16px',
               left: isCardOnLeft ? '16px' : 'auto',
               right: isCardOnLeft ? 'auto' : '16px',
-              background: 'rgba(255, 252, 246, 0.9)',
+              background: 'var(--control-surface)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.8)',
+              border: '1px solid var(--control-border)',
               padding: '6px 12px',
               borderRadius: 'var(--radius-pill)',
               fontFamily: 'var(--font-ui)',
@@ -740,7 +740,7 @@ export function DreamDeliveryMap() {
               gap: '6px',
               cursor: 'pointer',
               zIndex: 10,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+              boxShadow: '0 4px 12px var(--control-shadow)',
             }}
           >
             <BookOpen size={13} style={{ color: 'var(--accent)' }} />
@@ -770,10 +770,10 @@ export function DreamDeliveryMap() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: 'rgba(255, 252, 246, 0.88)',
+              background: 'var(--control-surface)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
+              border: '1px solid var(--control-border)',
               padding: '6px 14px',
               borderRadius: 'var(--radius-pill)',
               fontFamily: 'var(--font-ui)',
@@ -781,16 +781,16 @@ export function DreamDeliveryMap() {
               fontWeight: 600,
               color: 'var(--body-text)',
               textDecoration: 'none',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              boxShadow: '0 4px 12px var(--control-shadow)',
               transition: 'transform 0.18s, background 0.18s',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.background = '#ffffff';
+              e.currentTarget.style.background = 'var(--body-text)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.background = 'rgba(255, 252, 246, 0.88)';
+              e.currentTarget.style.background = 'var(--control-surface)';
             }}
           >
             <ArrowLeft size={13} />
@@ -804,17 +804,17 @@ export function DreamDeliveryMap() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              background: isTouring ? 'var(--vintage-berry)' : 'rgba(255, 252, 246, 0.88)',
-              color: isTouring ? '#ffffff' : 'var(--body-text)',
+              background: isTouring ? 'var(--vintage-berry)' : 'var(--control-surface)',
+              color: isTouring ? 'var(--body-text)' : 'var(--body-text)',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
+              border: '1px solid var(--control-border)',
               padding: '6px 14px',
               borderRadius: 'var(--radius-pill)',
               fontFamily: 'var(--font-ui)',
               fontSize: 'clamp(0.74rem, 0.9vw, 0.82rem)',
               fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              boxShadow: '0 4px 12px var(--control-shadow)',
               transition: 'all 0.18s ease',
             }}
           >
@@ -858,8 +858,8 @@ export function DreamDeliveryMap() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
-                  background: isSelected ? 'var(--vintage-berry)' : 'rgba(255, 252, 246, 0.9)',
-                  color: isSelected ? '#ffffff' : 'var(--body-text)',
+                  background: isSelected ? 'var(--vintage-berry)' : 'var(--control-surface)',
+                  color: isSelected ? 'var(--body-text)' : 'var(--body-text)',
                   border: isSelected
                     ? '1.5px solid rgba(251, 191, 36, 0.8)'
                     : '1px solid var(--border-warm)',
@@ -869,7 +869,7 @@ export function DreamDeliveryMap() {
                   fontSize: '0.74rem',
                   fontWeight: isSelected ? 700 : 500,
                   cursor: 'pointer',
-                  boxShadow: isSelected ? '0 2px 8px rgba(163, 64, 99, 0.3)' : 'none',
+                  boxShadow: isSelected ? '0 2px 8px var(--shadow-warm)' : 'none',
                   transition: 'all 0.2s ease',
                 }}
               >
@@ -885,10 +885,10 @@ export function DreamDeliveryMap() {
           className="dream-floating-card-mobile"
           style={{
             width: '100%',
-            background: 'rgba(255, 252, 246, 0.95)',
+            background: 'var(--control-surface)',
             border: '1.5px solid var(--border-warm)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: '0 8px 24px rgba(50, 28, 38, 0.1)',
+            boxShadow: '0 8px 24px var(--shadow-warm)',
             padding: '12px',
             display: 'flex',
             flexDirection: 'column',
@@ -963,7 +963,7 @@ export function DreamDeliveryMap() {
               justifyContent: 'center',
               gap: '6px',
               background: 'var(--vintage-berry)',
-              color: '#fff',
+              color: 'var(--body-text)',
               fontFamily: 'var(--font-ui)',
               fontSize: '0.82rem',
               fontWeight: 600,
@@ -971,7 +971,7 @@ export function DreamDeliveryMap() {
               borderRadius: 'var(--radius-pill)',
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 4px 10px rgba(163, 64, 99, 0.25)',
+              boxShadow: '0 4px 10px var(--shadow-warm)',
             }}
           >
             <span>View Full Dream Lore</span>
@@ -997,7 +997,7 @@ export function DreamDeliveryMap() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '5px',
-              background: 'rgba(255, 252, 246, 0.9)',
+              background: 'var(--control-surface)',
               border: '1px solid var(--border-warm)',
               padding: '7px 12px',
               borderRadius: 'var(--radius-pill)',
@@ -1006,7 +1006,7 @@ export function DreamDeliveryMap() {
               fontWeight: 600,
               color: 'var(--body-text)',
               textDecoration: 'none',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+              boxShadow: '0 2px 6px var(--control-shadow)',
             }}
           >
             <ArrowLeft size={13} />
@@ -1021,8 +1021,8 @@ export function DreamDeliveryMap() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '5px',
-              background: isTouring ? 'var(--vintage-berry)' : 'rgba(255, 252, 246, 0.9)',
-              color: isTouring ? '#ffffff' : 'var(--body-text)',
+              background: isTouring ? 'var(--vintage-berry)' : 'var(--control-surface)',
+              color: isTouring ? 'var(--body-text)' : 'var(--body-text)',
               border: '1px solid var(--border-warm)',
               padding: '7px 12px',
               borderRadius: 'var(--radius-pill)',
@@ -1030,7 +1030,7 @@ export function DreamDeliveryMap() {
               fontSize: '0.78rem',
               fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+              boxShadow: '0 2px 6px var(--control-shadow)',
             }}
           >
             {isTouring ? <Pause size={12} /> : <Play size={12} />}
@@ -1054,7 +1054,7 @@ export function DreamDeliveryMap() {
               alignItems: 'center',
               justifyContent: 'center',
               padding: 'var(--sp-4)',
-              background: 'rgba(20, 14, 24, 0.72)',
+              background: 'var(--overlay-dark)',
               backdropFilter: 'blur(8px)',
             }}
             onClick={() => setIsModalOpen(false)}
@@ -1074,7 +1074,7 @@ export function DreamDeliveryMap() {
                 background: 'var(--surface-panel)',
                 border: '2px solid var(--border-warm)',
                 borderRadius: 'var(--radius-xl)',
-                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.4)',
+                boxShadow: '0 24px 60px var(--shadow-deep)',
               }}
             >
               {/* Modal Banner Image */}
@@ -1097,9 +1097,9 @@ export function DreamDeliveryMap() {
                     width: '32px',
                     height: '32px',
                     borderRadius: '50%',
-                    background: 'rgba(20, 14, 24, 0.75)',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    background: 'var(--overlay-dark)',
+                    color: 'var(--body-text)',
+                    border: '1px solid var(--control-border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1188,7 +1188,7 @@ export function DreamDeliveryMap() {
                     onClick={() => setIsModalOpen(false)}
                     style={{
                       background: 'var(--vintage-berry)',
-                      color: '#ffffff',
+                      color: 'var(--body-text)',
                       border: 'none',
                       padding: '8px 18px',
                       borderRadius: 'var(--radius-pill)',

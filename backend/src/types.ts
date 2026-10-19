@@ -50,3 +50,19 @@ export interface ApiResponse<T = unknown> {
 export interface EntriesPage {
   entries: GuestbookEntry[];
 }
+
+/** Record of a Sakura Drift game score. */
+export interface ScoreRecord {
+  id: string;
+  nickname?: string;
+  score: number;
+  laps?: number;
+  created_at: string;
+}
+
+/** Input for saving a Sakura Drift game score. */
+export interface ScoreInput {
+  nickname?: string;
+  score: number;
+  laps?: number;
+}

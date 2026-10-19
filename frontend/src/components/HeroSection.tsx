@@ -11,12 +11,14 @@ import { EasterEggTrigger } from './EasterEgg';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
 import { InteractivePip } from './InteractivePip';
+import { CozyGreetingWidget } from './CozyGreetingWidget';
 
 interface HeroSectionProps {
   chaosMode: boolean;
+  onPlayGame?: () => void;
 }
 
-export function HeroSection({ chaosMode }: HeroSectionProps) {
+export function HeroSection({ chaosMode, onPlayGame }: HeroSectionProps) {
   const prefersReduced = useReducedMotionPreference();
   const { soundEnabled } = useSoundContext();
   const { playChime } = useSound(soundEnabled);
@@ -29,12 +31,12 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
       className="hero-scenic-stage"
       style={{
         position: 'relative',
-        minHeight: 'clamp(620px, 86vh, 900px)',
+        minHeight: 'clamp(520px, 84vh, 900px)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 'clamp(3.8rem, 7vw, 4.8rem) clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4.5rem)',
+        padding: 'clamp(1.8rem, 5vw, 4.8rem) clamp(0.75rem, 3vw, 2.5rem) clamp(2rem, 5vw, 4.5rem)',
         overflow: 'hidden',
       }}
     >
@@ -65,7 +67,7 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
         }}
       />
 
-      {/* Whimsical Floating Easter Egg Charm */}
+      {/* Top Floating Controls: Easter Egg Charm + Sakura Drift Cozy Button */}
       <div
         className="hero-easter-egg-wrapper"
         style={{
@@ -73,6 +75,11 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
           top: 'clamp(14px, 3vh, 36px)',
           right: 'clamp(14px, 3vw, 40px)',
           zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flexWrap: 'wrap',
+          justifyContent: 'flex-end',
         }}
       >
         <EasterEggTrigger />
@@ -90,6 +97,8 @@ export function HeroSection({ chaosMode }: HeroSectionProps) {
           maxWidth: '820px',
         }}
       >
+        {/* Cozy Greeting Widget at the start */}
+        <CozyGreetingWidget onPlayGame={onPlayGame ?? (() => {})} />
         {/* Badges & Header Intro */}
         <motion.div
           initial={prefersReduced ? false : { opacity: 0, y: -20 }}

@@ -51,6 +51,7 @@ export function EasterEggTrigger({ onEggFound }: EasterEggProps) {
       setSoundEnabled(true);
     }
     engine.setMuted(false);
+    await engine.unlock();
     await engine.playEasterEggChime();
   }, [fireConfetti, onEggFound, soundEnabled, setSoundEnabled]);
 

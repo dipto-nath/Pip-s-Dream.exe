@@ -9,14 +9,18 @@ export function useSound(soundEnabled: boolean) {
   const playChime = useCallback(
     async (freq = 880) => {
       if (!soundEnabled) return;
-      await getAudioEngine().playChime(freq);
+      const engine = getAudioEngine();
+      await engine.unlock();
+      await engine.playChime(freq);
     },
     [soundEnabled],
   );
 
   const startLullaby = useCallback(async () => {
     if (!soundEnabled) return;
-    await getAudioEngine().startLullaby();
+    const engine = getAudioEngine();
+    await engine.unlock();
+    await engine.startLullaby();
   }, [soundEnabled]);
 
   const stopLullaby = useCallback(() => {
@@ -25,7 +29,9 @@ export function useSound(soundEnabled: boolean) {
 
   const playEasterEgg = useCallback(async () => {
     if (!soundEnabled) return;
-    await getAudioEngine().playEasterEggChime();
+    const engine = getAudioEngine();
+    await engine.unlock();
+    await engine.playEasterEggChime();
   }, [soundEnabled]);
 
   return { playChime, startLullaby, stopLullaby, playEasterEgg };

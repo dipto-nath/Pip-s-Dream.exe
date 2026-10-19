@@ -5,17 +5,20 @@
 // complex object and the visitCounter session logic.
 // =============================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { LanternPreset } from '../lib/types';
 import {
   loadProfile,
   initializeProfile,
   updateVisitorName,
+  updateDriftScore,
   saveFavoritePreset as persistPreset,
   markGreeted,
   getPersonalizedGreeting,
   type VisitorProfile,
 } from '../lib/visitorMemory';
+
+const PROFILE_UPDATE_EVENT = 'pip:profile-updated';
 
 export interface UseVisitorMemoryResult {
   profile: VisitorProfile | null;
@@ -23,11 +26,13 @@ export interface UseVisitorMemoryResult {
   isReturning: boolean;
   /** Alias for isReturning */
   isReturningVisitor: boolean;
-  greeting: { text: string; isFirst: boolean };
+  greeting: { text: string; isFirst: boolean; visitorName?: string };
   /** Save the visitor's name (e.g. after a guestbook submission). */
   saveName: (name: string) => void;
   /** Alias for saveName */
   updateVisitorName: (name: string) => void;
+  /** Save the visitor's best score in Sakura Drift. */
+  saveDriftScore: (score: number) => void;
   /** Save the visitor's favorite nightlight preset. */
   savePreset: (preset: LanternPreset) => void;
   /** Mark that the intro greeting has been shown. */
@@ -43,25 +48,54 @@ export function useVisitorMemory(): UseVisitorMemoryResult {
     return initializeProfile();
   });
 
+  const refresh = useCallback(() => {
+    setProfile(loadProfile());
+  }, []);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setProfile(loadProfile());
+    };
+    window.addEventListener(PROFILE_UPDATE_EVENT, handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener(PROFILE_UPDATE_EVENT, handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const notifyChange = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(PROFILE_UPDATE_EVENT));
+    }
+  };
+
   const saveName = useCallback((name: string): void => {
     const updated = updateVisitorName(name);
     if (updated) {
       setProfile(updated);
+      notifyChange();
+    }
+  }, []);
+
+  const saveDriftScore = useCallback((score: number): void => {
+    const updated = updateDriftScore(score);
+    if (updated) {
+      setProfile(updated);
+      notifyChange();
     }
   }, []);
 
   const savePreset = useCallback((preset: LanternPreset): void => {
     persistPreset(preset);
     setProfile((prev) => (prev ? { ...prev, favoritePreset: preset } : prev));
+    notifyChange();
   }, []);
 
   const markGreetedCallback = useCallback(() => {
     markGreeted();
     setProfile((prev) => (prev ? { ...prev, greeted: true } : prev));
-  }, []);
-
-  const refresh = useCallback(() => {
-    setProfile(loadProfile());
+    notifyChange();
   }, []);
 
   const isFirstVisit = (profile?.visitCount ?? 0) <= 1;
@@ -79,6 +113,7 @@ export function useVisitorMemory(): UseVisitorMemoryResult {
     greeting,
     saveName,
     updateVisitorName: saveName,
+    saveDriftScore,
     savePreset,
     markGreeted: markGreetedCallback,
     refresh,
