@@ -1174,7 +1174,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
             {/* Top-Left HUD */}
             <div className="absolute top-3 left-3 pointer-events-none flex flex-col gap-1.5">
-              <div className="bg-[#2B1D16]/85 backdrop-blur-xs border border-[#DEC3A7]/50 px-3 py-1.5 rounded-xl flex items-center gap-3 text-xs shadow-md text-white max-w-[155px] overflow-hidden">
+              <div className={`flex items-center gap-3 ${styles.sdHud} text-xs max-w-[155px] overflow-hidden`}>
                 <span className="text-[#F6A9BE] font-semibold flex items-center gap-1">
                   <Trophy size={12} /> BEST:
                 </span>
@@ -1202,7 +1202,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
             {/* Top-Right Speedometer & Toast */}
             <div className="absolute top-3 right-3 pointer-events-none flex flex-col items-end gap-1.5">
-              <div className="bg-[#2B1D16]/85 backdrop-blur-xs border border-[#DEC3A7]/50 px-3 py-1.5 rounded-xl text-right shadow-md text-white min-w-[56px] overflow-hidden">
+              <div className={`text-right ${styles.sdHud} min-w-[56px] overflow-hidden text-xs`}>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#F6A9BE] shadow-[0_0_6px_rgba(246,169,190,0.6)] flex-shrink-0"></span>
                   <span className="font-mono font-bold text-sm text-white">{hudSpeed}</span>
@@ -1267,18 +1267,18 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
         </div>
 
         {/* Bottom Control Bar */}
-        <div className="pt-2.5 pb-2 sm:pb-2.5 px-2.5 sm:px-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#DEC3A7] border-t border-[#DEC3A7]/25"
-          style={{ background: 'linear-gradient(180deg, rgba(58, 40, 32, 0.90) 0%, rgba(43, 29, 22, 0.93) 100%)' }}
+        <div
+          className={`flex flex-wrap items-center justify-between gap-2 border-t border-[#DEC3A7]/20 ${styles.sdStatusbar}`}
         >
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-2 py-0.5 bg-gradient-to-b from-[#3B281E] to-[#4E372B] border border-[#6E5243]/70 rounded text-[10px] text-[#FFF8F1] font-mono font-medium shadow-[0_1px_3px_rgba(0,0,0,0.3)]">WASD</kbd>
+              <kbd className={styles.sdKey}>WASD</kbd>
               <span className="text-[#A89082]">/</span>
-              <kbd className="px-2 py-0.5 bg-gradient-to-b from-[#3B281E] to-[#4E372B] border border-[#6E5243]/70 rounded text-[10px] text-[#FFF8F1] font-mono font-medium shadow-[0_1px_3px_rgba(0,0,0,0.3)]">ARROWS</kbd>
+              <kbd className={styles.sdKey}>ARROWS</kbd>
               <span className="text-[11px] text-[#C9B3A3] font-medium ml-0.5">Drive</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-2.5 py-0.5 bg-gradient-to-b from-[#a34063] to-[#8b3254] border border-[#F6A9BE]/60 rounded text-[10px] text-white font-mono font-bold shadow-[0_1px_3px_rgba(0,0,0,0.3),0_0_4px_rgba(246,169,190,0.2)]">SPACE</kbd>
+              <kbd className={styles.sdKeySpace}>SPACE</kbd>
               <span className="text-[11px] text-[#F6A9BE] font-semibold">Sakura Drift</span>
             </span>
           </div>
@@ -1293,7 +1293,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
                   ensureAudio();
                   setShowHandling((v) => !v);
                 }}
-                className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#3B281E] to-[#4E372B] hover:from-[#4E372B] hover:to-[#624233] border border-[#6E5243] text-white text-[11px] flex items-center gap-1.5 transition cursor-pointer shadow-xs hover:shadow-sm shrink-0"
+                className={`${styles.sdBtn} shrink-0`}
               >
                 <Sliders size={13} className="text-[#F3C66F]" />
                 <span>Steer: <strong className="text-[#F3C66F] capitalize">{handlingPreset}</strong></span>
@@ -1301,7 +1301,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
               {showHandling && (
                 <div 
-                  className="absolute bottom-10 left-0 w-56 bg-gradient-to-b from-[#2B1D16] to-[#241711] border-2 border-[#DEC3A7] rounded-xl p-3 shadow-2xl z-50 text-left max-w-[calc(100vw-2rem)]"
+                  className={`absolute bottom-10 left-0 w-56 p-3 shadow-2xl z-50 text-left max-w-[calc(100vw-2rem)] ${styles.sdPopover}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-mono font-bold text-[#F6A9BE] uppercase">STEERING FEEL</span>
@@ -1362,7 +1362,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
                 showToast(`🎨 ${CAR_PAINTS[next].name.toUpperCase()}`);
                 playNote(4);
               }}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#3B281E] to-[#4E372B] hover:from-[#4E372B] hover:to-[#624233] border border-[#6E5243] text-white text-[11px] flex items-center gap-1.5 transition cursor-pointer shadow-xs hover:shadow-sm shrink-0"
+              className={`${styles.sdBtn} shrink-0`}
             >
               <Palette size={13} className="text-[#F6A9BE]" />
               <span>{CAR_PAINTS[paintIdx].name}</span>
@@ -1383,7 +1383,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
                 });
               }}
               title={muted ? 'Unmute cozy game audio' : 'Mute game audio'}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#3B281E] to-[#4E372B] hover:from-[#4E372B] hover:to-[#624233] border border-[#6E5243] text-white text-[11px] flex items-center gap-1.5 transition cursor-pointer shadow-xs hover:shadow-sm shrink-0"
+              className={`${styles.sdBtn} shrink-0`}
             >
               {muted ? <VolumeX size={13} className="text-[#F6A9BE]" /> : <Volume2 size={13} className="text-[#F3C66F]" />}
             </button>
@@ -1398,7 +1398,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
                 playNote(1);
               }}
               title="Reset Run (R)"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-[#3B281E] to-[#4E372B] hover:from-[#4E372B] hover:to-[#624233] border border-[#6E5243] text-white text-[11px] flex items-center gap-1.5 transition cursor-pointer shadow-xs hover:shadow-sm shrink-0"
+              className={`${styles.sdBtn} shrink-0`}
             >
               <RotateCcw size={13} className="text-[#F3C66F]" />
               <span>Reset</span>
