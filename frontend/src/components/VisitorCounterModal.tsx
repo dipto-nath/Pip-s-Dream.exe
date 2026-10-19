@@ -85,23 +85,57 @@ export function VisitorCounterModal({ isOpen: controlledIsOpen, onClose }: Visit
       setErrorMessage(null);
 
       try {
-        // Privacy-friendly counting logic:
-        // First visit in this browser (no 'sd_visited') -> POST /api/visits (atomic increment)
-        // Subsequent visits -> GET /api/visits (read-only total)
         const isFirstVisit = !localStorage.getItem(STORAGE_KEY);
-        const res = await fetch('/api/visits', {
-          method: isFirstVisit ? 'POST' : 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
+        let total: number | null = null;
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
+        // 1. Try /api/stats (authoritative production Supabase edge function & backend endpoint)
+        try {
+          const statsRes = await fetch('/api/stats', {
+            headers: { 'Accept': 'application/json' },
+          });
+          if (statsRes.ok) {
+            const data = await statsRes.json();
+            const count = data?.data?.total_visits ?? data?.data?.total ?? data?.total;
+            if (typeof count === 'number' && count >= 0) {
+              total = count;
+            }
+          }
+        } catch {
+          // ignore and proceed to /api/visits
         }
 
-        const data = await res.json();
-        const total = typeof data.total === 'number' ? data.total : (data.data?.total ?? 1);
+        // 2. If stats endpoint did not return, try /api/visits
+        if (total === null) {
+          try {
+            const res = await fetch('/api/visits', {
+              method: isFirstVisit ? 'POST' : 'GET',
+              headers: { 'Accept': 'application/json' },
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const count = typeof data.total === 'number' ? data.total : (data?.data?.total ?? data?.data?.total_visits);
+              if (typeof count === 'number' && count >= 0) {
+                total = count;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        // 3. Fallback to local storage counter if both network calls failed
+        if (total === null) {
+          const localStored = localStorage.getItem('pip-exe-visits');
+          if (localStored && !isNaN(parseInt(localStored, 10))) {
+            total = parseInt(localStored, 10);
+          }
+        }
 
         if (isCancelled) return;
+
+        if (total === null) {
+          throw new Error('All counter endpoints unavailable');
+        }
 
         if (isFirstVisit) {
           try {

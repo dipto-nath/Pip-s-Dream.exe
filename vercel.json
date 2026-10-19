@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/visits",
+      "destination": "https://hsbadfoyxryiuhepmnso.supabase.co/functions/v1/stats"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "https://hsbadfoyxryiuhepmnso.supabase.co/functions/v1/$1"
     },
