@@ -6,10 +6,11 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowRight, Play, Pause, ArrowLeft, Volume2, BookOpen } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Play, Pause, ArrowLeft, BookOpen, Square, Music } from 'lucide-react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { useSoundContext } from '../context/SoundProvider';
 import { useSound } from '../hooks/useSound';
+import { getAudioEngine } from '../lib/audioEngine';
 
 export interface DreamRouteStop {
   id: string;
@@ -123,6 +124,7 @@ export function DreamDeliveryMap() {
   const [selectedStopIndex, setSelectedStopIndex] = useState(0);
   const [isCardVisible, setIsCardVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPlayingChime, setIsPlayingChime] = useState(false);
   const [isTouring, setIsTouring] = useState(false);
   const [manualSide, setManualSide] = useState<'auto' | 'left' | 'right'>('auto');
   const tourTimerRef = useRef<number | null>(null);
@@ -133,10 +135,60 @@ export function DreamDeliveryMap() {
   const lastManualTimeRef = useRef<number>(0);
 
   const prefersReduced = useReducedMotionPreference();
-  const { soundEnabled } = useSoundContext();
-  const { playChime } = useSound(soundEnabled);
+  const { soundEnabled, setSoundEnabled } = useSoundContext();
+  const { playChime, startDreamChime, stopDreamChime } = useSound(soundEnabled);
 
   const currentStop = DREAM_STOPS[selectedStopIndex];
+
+  // Modal open/close & Chime audio control
+  const handleOpenModal = useCallback(() => {
+    setIsModalOpen(true);
+    if (soundEnabled) {
+      playChime(currentStop.chimeFreq);
+    }
+  }, [soundEnabled, playChime, currentStop.chimeFreq]);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setIsPlayingChime(false);
+    stopDreamChime();
+  }, [stopDreamChime]);
+
+  const handlePlayChime = useCallback(async () => {
+    if (isPlayingChime) return;
+    if (!soundEnabled) {
+      setSoundEnabled(true);
+    }
+    await startDreamChime(currentStop.id);
+    setIsPlayingChime(true);
+  }, [isPlayingChime, soundEnabled, setSoundEnabled, startDreamChime, currentStop.id]);
+
+  const handleStopChime = useCallback(() => {
+    stopDreamChime();
+    setIsPlayingChime(false);
+    if (soundEnabled) {
+      playChime(440);
+    }
+  }, [stopDreamChime, soundEnabled, playChime]);
+
+  // Stop chime when unmounting
+  useEffect(() => {
+    return () => {
+      getAudioEngine().stopDreamChime();
+    };
+  }, []);
+
+  // Keyboard Escape listener
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isModalOpen, handleCloseModal]);
   // Dynamically dock card on the left when stop is on the right (like Stop 5 castle) so no lantern is hidden on desktop
   const isCardOnLeft = manualSide === 'auto' ? currentStop.x > 50 : manualSide === 'left';
 
@@ -811,10 +863,7 @@ export function DreamDeliveryMap() {
 
               {/* View Dream Button */}
               <button
-                onClick={() => {
-                  setIsModalOpen(true);
-                  if (soundEnabled) playChime(currentStop.chimeFreq);
-                }}
+                onClick={handleOpenModal}
                 className="view-dream-btn"
                 style={{
                   display: 'inline-flex',
@@ -822,7 +871,7 @@ export function DreamDeliveryMap() {
                   justifyContent: 'center',
                   gap: '6px',
                   background: 'var(--vintage-berry)',
-                  color: 'var(--body-text)',
+                  color: '#FFF8F1',
                   fontFamily: 'var(--font-ui)',
                   fontSize: 'clamp(0.78rem, 0.95vw, 0.86rem)',
                   fontWeight: 600,
@@ -1085,10 +1134,7 @@ export function DreamDeliveryMap() {
           </div>
 
           <button
-            onClick={() => {
-              setIsModalOpen(true);
-              if (soundEnabled) playChime(currentStop.chimeFreq);
-            }}
+            onClick={handleOpenModal}
             style={{
               width: '100%',
               display: 'flex',
@@ -1096,7 +1142,7 @@ export function DreamDeliveryMap() {
               justifyContent: 'center',
               gap: '6px',
               background: 'var(--vintage-berry)',
-              color: 'var(--body-text)',
+              color: '#FFF8F1',
               fontFamily: 'var(--font-ui)',
               fontSize: '0.82rem',
               fontWeight: 600,
@@ -1190,7 +1236,7 @@ export function DreamDeliveryMap() {
               background: 'var(--overlay-dark)',
               backdropFilter: 'blur(8px)',
             }}
-            onClick={() => setIsModalOpen(false)}
+            onClick={handleCloseModal}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 15 }}
@@ -1221,25 +1267,32 @@ export function DreamDeliveryMap() {
                     objectFit: 'cover',
                   }}
                 />
+                {/* High-visibility Close Cross Button */}
                 <button
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
+                  aria-label="Close dream log"
+                  title="Close (Esc)"
+                  className="dream-modal-close-btn"
                   style={{
                     position: 'absolute',
                     top: '12px',
                     right: '12px',
-                    width: '32px',
-                    height: '32px',
+                    zIndex: 30,
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
-                    background: 'var(--overlay-dark)',
-                    color: 'var(--body-text)',
-                    border: '1px solid var(--control-border)',
+                    background: 'rgba(28, 16, 25, 0.92)',
+                    color: '#FFF8F1',
+                    border: '2px solid rgba(255, 255, 255, 0.85)',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
+                    transition: 'transform 0.15s ease, background 0.15s ease, border-color 0.15s ease',
                   }}
                 >
-                  <X size={16} />
+                  <X size={20} strokeWidth={2.4} />
                 </button>
               </div>
 
@@ -1294,34 +1347,73 @@ export function DreamDeliveryMap() {
                     borderTop: '1px solid var(--border-warm)',
                   }}
                 >
-                  <button
-                    onClick={() => {
-                      if (soundEnabled) playChime(currentStop.chimeFreq);
-                    }}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'rgba(251, 191, 36, 0.15)',
-                      color: 'var(--accent)',
-                      border: '1px solid rgba(245, 158, 11, 0.4)',
-                      padding: '8px 16px',
-                      borderRadius: 'var(--radius-pill)',
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Volume2 size={15} />
-                    <span>Play Destination Chime</span>
-                  </button>
+                  {/* Destination Chime Controls (Play + Stop like LullabyLab) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handlePlayChime}
+                      disabled={isPlayingChime}
+                      aria-label={`Play destination chime for ${currentStop.title}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: isPlayingChime ? 'rgba(245, 158, 11, 0.22)' : 'rgba(251, 191, 36, 0.15)',
+                        color: 'var(--accent)',
+                        border: isPlayingChime ? '1px solid rgba(245, 158, 11, 0.7)' : '1px solid rgba(245, 158, 11, 0.4)',
+                        padding: '8px 16px',
+                        borderRadius: 'var(--radius-pill)',
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: isPlayingChime ? 'default' : 'pointer',
+                        boxShadow: isPlayingChime ? '0 0 16px rgba(245, 158, 11, 0.45)' : undefined,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {isPlayingChime ? (
+                        <>
+                          <Music size={14} style={{ color: 'var(--amber)', animation: 'spin-slow 3s linear infinite' }} />
+                          <span>Chiming...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play size={13} fill="currentColor" />
+                          <span>Play Destination Chime</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleStopChime}
+                      disabled={!isPlayingChime}
+                      aria-label="Stop destination chime"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: isPlayingChime ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.04)',
+                        color: isPlayingChime ? '#E05D52' : 'var(--text-muted)',
+                        border: isPlayingChime ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid var(--border-warm)',
+                        padding: '8px 14px',
+                        borderRadius: 'var(--radius-pill)',
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: !isPlayingChime ? 'not-allowed' : 'pointer',
+                        opacity: !isPlayingChime ? 0.4 : 1,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Square size={11} fill="currentColor" />
+                      <span>Stop</span>
+                    </button>
+                  </div>
 
                   <button
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={handleCloseModal}
                     style={{
                       background: 'var(--vintage-berry)',
-                      color: 'var(--body-text)',
+                      color: '#FFF8F1',
                       border: 'none',
                       padding: '8px 18px',
                       borderRadius: 'var(--radius-pill)',
@@ -1329,6 +1421,7 @@ export function DreamDeliveryMap() {
                       fontSize: '0.82rem',
                       fontWeight: 600,
                       cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                     }}
                   >
                     Close Dream Log
@@ -1342,6 +1435,17 @@ export function DreamDeliveryMap() {
 
       {/* Scoped CSS Keyframes & Responsive Media Queries */}
       <style>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .dream-modal-close-btn:hover {
+          transform: scale(1.08);
+          background: rgba(45, 24, 34, 0.98) !important;
+          border-color: #ffffff !important;
+        }
+
         @keyframes lantern-pulse {
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
           50% { transform: translate(-50%, -50%) scale(1.22); opacity: 1; }

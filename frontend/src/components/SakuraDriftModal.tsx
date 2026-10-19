@@ -1147,7 +1147,8 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
           </span>
 
           {/* Right Status Readouts & Close Button */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
+          <span className={styles.sdSpacer} />
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <span className={styles.sdReadout}>TIME <b id="time">{hudTime}</b></span>
             <span className={styles.sdReadout}>DRIFT <b id="drift">x{hudMult} {hudScore.toLocaleString()}</b></span>
           </div>

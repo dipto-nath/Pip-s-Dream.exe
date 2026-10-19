@@ -34,5 +34,19 @@ export function useSound(soundEnabled: boolean) {
     await engine.playEasterEggChime();
   }, [soundEnabled]);
 
-  return { playChime, startLullaby, stopLullaby, playEasterEgg };
+  const startDreamChime = useCallback(
+    async (dreamId: string) => {
+      if (!soundEnabled) return;
+      const engine = getAudioEngine();
+      await engine.unlock();
+      await engine.startDreamChime(dreamId);
+    },
+    [soundEnabled],
+  );
+
+  const stopDreamChime = useCallback(() => {
+    getAudioEngine().stopDreamChime();
+  }, []);
+
+  return { playChime, startLullaby, stopLullaby, playEasterEgg, startDreamChime, stopDreamChime };
 }

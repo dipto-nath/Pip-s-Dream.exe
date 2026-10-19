@@ -218,9 +218,6 @@
   /* wider, space-bar-shaped key cap */
   min-width: 72px;
 }
-@media (max-width: 639px) {
-  .sdKeySpace { min-width: 56px; }
-}
 .sdKeyLabel {
   font-family: var(--font-cozy);
   font-size: 0.8rem;
@@ -254,4 +251,5 @@
   .sdKeyLabel   { font-size: 0.72rem; }
   .sdBtn        { min-height: 36px; padding: 6px 12px; font-size: 14px; }
   .sdStatusbar  { font-size: 13px; gap: 6px; }
+  .sdKeySpace { min-width: 56px; }
 }
