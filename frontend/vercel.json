@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://hsbadfoyxryiuhepmnso.supabase.co/functions/v1/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
