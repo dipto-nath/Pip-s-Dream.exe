@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { useVisitorMemory } from '../hooks/useVisitorMemory';
 import { submitDriftScore } from '../lib/scoreService';
+import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import styles from '../styles/SakuraDriftModal.module.css';
 
 interface SakuraDriftModalProps {
   isOpen: boolean;
@@ -73,6 +75,7 @@ const PENTATONIC_HZ = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
 export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { profile, saveDriftScore } = useVisitorMemory();
+  const prefersReduced = useReducedMotionPreference();
 
   // State
   const [paintIdx, setPaintIdx] = useState(0);
@@ -1128,59 +1131,20 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
       }}
     >
       <div 
-        className="relative w-full max-w-[880px] rounded-[24px] p-2.5 sm:p-4 flex flex-col"
-        style={{
-          backgroundColor: '#2B1D16',
-          border: '3px solid #DEC3A7',
-          boxShadow: '0 25px 60px -12px rgba(28, 17, 12, 0.7), inset 0 1px 0 rgba(255, 248, 237, 0.2)',
-        }}
+        className={`relative w-full max-w-[880px] flex flex-col ${styles.sdWindow} ${prefersReduced ? '' : styles.sdPopIn}`}
       >
-        {/* Top Header Bar - Polished gradient, never overflows */}
-        <div
-          className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3"
-          style={{
-            background: 'linear-gradient(180deg, rgba(43, 29, 22, 0.96) 0%, rgba(38, 26, 20, 0.98) 100%)',
-            borderBottom: '1px solid rgba(212, 195, 167, 0.2)',
-          }}
-        >
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* Game Logo Title */}
-            <div className="flex items-center gap-1.5 select-none shrink-0">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-b from-[#F6A9BE] to-[#F3C66F] flex items-center justify-center shadow-[0_0_8px_rgba(246,169,190,0.5)]">
-                <span style={{ fontSize: '1.2rem', lineHeight: 1, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}>🌸</span>
-              </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-display, "Fraunces", Georgia, serif)',
-                  fontWeight: 800,
-                  fontSize: 'clamp(1.15rem, 3vw, 1.4rem)',
-                  letterSpacing: '0.04em',
-                  background: 'linear-gradient(90deg, #F6A9BE 0%, #FFF8F1 50%, #F6A9BE 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  lineHeight: 1,
-                }}
-              >
-                SAKURA DRIFT
-              </span>
-            </div>
+        {/* Retro Popup Title Bar */}
+        <div className={styles.sdTitlebar}>
+          <span className={styles.sdTitle}>SAKURA DRIFT 🌸</span>
 
-            {/* Polished Pilot Badge */}
-            <div
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, rgba(243, 198, 111, 0.25) 0%, rgba(246, 169, 190, 0.18) 100%)',
-                border: '1px solid rgba(243, 198, 111, 0.4)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 248, 237, 0.15)',
-              }}
-            >
-              <span style={{ color: '#F6A9BE', fontSize: '9px' }}>✦</span>
-              <span style={{ fontFamily: 'var(--font-ui, system-ui)', color: 'rgba(252, 235, 213, 0.75)', fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.04em' }}>PILOT</span>
-              <span style={{ fontFamily: 'var(--font-mono, monospace)', fontWeight: 700, color: '#F3C66F', fontSize: '0.72rem', maxWidth: '120px' }} className="truncate" title={profile?.name || 'Nursery Friend'}>
-                {profile?.name || 'Nursery Friend'}
-              </span>
-            </div>
-          </div>
+          {/* Pilot chip — hidden on narrow screens first */}
+          <span className={`hidden sm:inline-flex items-center gap-1.5 shrink-0 ${styles.sdReadout}`}>
+            <span style={{ color: '#F6A9BE', fontSize: '10px' }}>✦</span>
+            <span style={{ fontFamily: 'var(--font-cozy)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.04em' }}>PILOT</span>
+            <b className="max-w-[110px] truncate" style={{ fontFamily: 'var(--font-cozy)', fontSize: '0.68rem' }} title={profile?.name || 'Nursery Friend'}>
+              {profile?.name || 'Nursery Friend'}
+            </b>
+          </span>
 
           {/* Right Status Readouts & Close Button */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">

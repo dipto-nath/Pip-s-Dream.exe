@@ -591,159 +591,170 @@ function MobileVerticalTimeline({
   return (
     <section
       id="journey"
-      className="w-full relative py-12 px-5 sm:px-8"
       style={{
         color: textColor,
         backgroundColor,
+        padding: "clamp(3rem, 6vw, 4.5rem) 0",
+        position: "relative",
+        width: "100%",
       }}
     >
-      <div className="max-w-[500px] mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-8">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontFamily: "var(--font-ui, system-ui)",
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: activeColor,
-              marginBottom: "8px",
-            }}
-          >
-            <span>✦</span>
-            <span>{periodLabel}</span>
-            <span>✦</span>
-          </div>
-
-          <h2
-            className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight font-display"
-            style={{ color: textColor, margin: "0 0 10px 0" }}
-          >
-            {title}
-          </h2>
-
-          <p
-            style={{
-              fontFamily: "var(--font-story, Georgia, serif)",
-              fontSize: "0.92rem",
-              color: "var(--text-muted, #7a5845)",
-              maxWidth: "420px",
-              margin: "0 auto",
-              lineHeight: 1.55,
-            }}
-          >
-            A cozy five-year journey from a starry teacup to rooftop dream delivery.
-          </p>
-
-          {/* Centered Hero Story Image */}
-          <div className="flex justify-center items-center w-full my-6">
+      <div className="container">
+        <div
+          style={{
+            maxWidth: "520px",
+            margin: "0 auto",
+            paddingInline: "clamp(0.25rem, 2vw, 0.75rem)",
+          }}
+        >
+          {/* Section Header */}
+          <div className="text-center mb-8">
             <div
-              className="rounded-[22px] overflow-hidden border-2 border-[var(--border-warm)] shadow-lg bg-[var(--surface-panel)]"
               style={{
-                width: "220px",
-                height: "220px",
-                boxShadow: "0 10px 28px var(--shadow-warm), inset 0 1px 0 rgba(255,255,255,0.4)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                fontFamily: "var(--font-ui, system-ui)",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: activeColor,
+                marginBottom: "8px",
               }}
             >
-              <img
-                src={imageUrl}
-                alt={imageAlt}
-                className="w-full h-full object-cover object-[50%_15%] block"
-                loading="lazy"
-              />
+              <span>✦</span>
+              <span>{periodLabel}</span>
+              <span>✦</span>
+            </div>
+
+            <h2
+              className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight font-display"
+              style={{ color: textColor, margin: "0 0 10px 0" }}
+            >
+              {title}
+            </h2>
+
+            <p
+              style={{
+                fontFamily: "var(--font-story, Georgia, serif)",
+                fontSize: "0.94rem",
+                color: "var(--text-muted, #7a5845)",
+                maxWidth: "420px",
+                margin: "0 auto",
+                lineHeight: 1.6,
+                paddingInline: "var(--sp-2)",
+              }}
+            >
+              A cozy five-year journey from a starry teacup to rooftop dream delivery.
+            </p>
+
+            {/* Centered Hero Story Image */}
+            <div className="flex justify-center items-center w-full my-6">
+              <div
+                className="rounded-[22px] overflow-hidden border-2 border-[var(--border-warm)] shadow-lg bg-[var(--surface-panel)]"
+                style={{
+                  width: "220px",
+                  height: "220px",
+                  boxShadow: "0 10px 28px var(--shadow-warm), inset 0 1px 0 rgba(255,255,255,0.4)",
+                }}
+              >
+                <img
+                  src={imageUrl}
+                  alt={imageAlt}
+                  className="w-full h-full object-cover object-[50%_15%] block"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Minimalist Stepper Timeline (matching user reference image) */}
-        <div className="relative mt-8">
-          {allJourneyItems.map((item, index) => {
-            const isLast = index === allJourneyItems.length - 1;
-            const isCompleted = index < allJourneyItems.length - 1;
-            const chapterTitle = CHAPTER_TITLES[item.id] || `Chapter 0${index + 1}`;
+          {/* Minimalist Stepper Timeline (matching user reference image) */}
+          <div className="relative mt-8">
+            {allJourneyItems.map((item, index) => {
+              const isLast = index === allJourneyItems.length - 1;
+              const isCompleted = index < allJourneyItems.length - 1;
+              const chapterTitle = CHAPTER_TITLES[item.id] || `Chapter 0${index + 1}`;
 
-            return (
-              <div key={item.id} className="relative flex gap-4 sm:gap-5 items-start">
-                {/* Left Column: Circular Node + Vertical Connector Line */}
-                <div className="flex flex-col items-center flex-shrink-0 relative self-stretch">
-                  {/* Node Circle */}
-                  <div
-                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 z-10"
-                    style={{
-                      backgroundColor: isCompleted ? activeColor : "var(--surface-panel, #fffdf8)",
-                      border: `2px solid ${activeColor}`,
-                      boxShadow: isCompleted ? "0 2px 8px rgba(163, 64, 99, 0.3)" : "0 2px 6px var(--shadow-warm)",
-                    }}
-                  >
-                    {isCompleted ? (
-                      <Check size={16} strokeWidth={2.8} className="text-white" />
-                    ) : (
-                      <Clock size={16} strokeWidth={2.2} style={{ color: activeColor }} />
+              return (
+                <div key={item.id} className="relative flex gap-4 sm:gap-5 items-start">
+                  {/* Left Column: Circular Node + Vertical Connector Line */}
+                  <div className="flex flex-col items-center flex-shrink-0 relative self-stretch">
+                    {/* Node Circle */}
+                    <div
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 z-10"
+                      style={{
+                        backgroundColor: isCompleted ? activeColor : "var(--surface-panel, #fffdf8)",
+                        border: `2px solid ${activeColor}`,
+                        boxShadow: isCompleted ? "0 2px 8px rgba(163, 64, 99, 0.3)" : "0 2px 6px var(--shadow-warm)",
+                      }}
+                    >
+                      {isCompleted ? (
+                        <Check size={16} strokeWidth={2.8} className="text-white" />
+                      ) : (
+                        <Clock size={16} strokeWidth={2.2} style={{ color: activeColor }} />
+                      )}
+                    </div>
+
+                    {/* Vertical connecting rail running cleanly to the next node */}
+                    {!isLast && (
+                      <div
+                        className="w-[2px] flex-1 my-1 rounded-full"
+                        style={{
+                          backgroundColor: isCompleted ? activeColor : "var(--border-warm, #decbb4)",
+                          opacity: isCompleted ? 0.75 : 0.4,
+                        }}
+                      />
                     )}
                   </div>
 
-                  {/* Vertical connecting rail running cleanly to the next node */}
-                  {!isLast && (
+                  {/* Right Column: Date, Title, and Description */}
+                  <div className={`flex-1 min-w-0 ${isLast ? "pb-2" : "pb-7 sm:pb-8"}`} style={{ paddingRight: "4px" }}>
+                    {/* Date on top */}
                     <div
-                      className="w-[2px] flex-1 my-1 rounded-full"
                       style={{
-                        backgroundColor: isCompleted ? activeColor : "var(--border-warm, #decbb4)",
-                        opacity: isCompleted ? 0.75 : 0.4,
+                        fontFamily: "var(--font-ui, system-ui)",
+                        fontSize: "0.78rem",
+                        fontWeight: 600,
+                        color: "var(--text-muted, #7a5845)",
+                        letterSpacing: "0.02em",
+                        marginBottom: "3px",
                       }}
-                    />
-                  )}
-                </div>
+                    >
+                      {item.month} {item.year}
+                    </div>
 
-                {/* Right Column: Date, Title, and Description */}
-                <div className={`flex-1 min-w-0 ${isLast ? "pb-2" : "pb-7 sm:pb-8"}`}>
-                  {/* Date on top */}
-                  <div
-                    style={{
-                      fontFamily: "var(--font-ui, system-ui)",
-                      fontSize: "0.78rem",
-                      fontWeight: 600,
-                      color: "var(--text-muted, #7a5845)",
-                      letterSpacing: "0.02em",
-                      marginBottom: "3px",
-                    }}
-                  >
-                    {item.month} {item.year}
+                    {/* Bold Milestone Title */}
+                    <h3
+                      style={{
+                        fontFamily: "var(--font-display, Georgia, serif)",
+                        fontSize: "1.08rem",
+                        fontWeight: 700,
+                        color: "var(--body-text, #3a2418)",
+                        lineHeight: 1.3,
+                        margin: "0 0 6px 0",
+                      }}
+                    >
+                      {chapterTitle}
+                    </h3>
+
+                    {/* Description with comfortable line-height */}
+                    <p
+                      style={{
+                        fontFamily: "var(--font-story, Georgia, serif)",
+                        fontSize: "0.92rem",
+                        lineHeight: 1.6,
+                        color: "var(--text-muted, #7a5845)",
+                        margin: 0,
+                      }}
+                    >
+                      {item.content}
+                    </p>
                   </div>
-
-                  {/* Bold Milestone Title */}
-                  <h3
-                    style={{
-                      fontFamily: "var(--font-display, Georgia, serif)",
-                      fontSize: "1.08rem",
-                      fontWeight: 700,
-                      color: "var(--body-text, #3a2418)",
-                      lineHeight: 1.3,
-                      margin: "0 0 6px 0",
-                    }}
-                  >
-                    {chapterTitle}
-                  </h3>
-
-                  {/* Description with comfortable line-height */}
-                  <p
-                    style={{
-                      fontFamily: "var(--font-story, Georgia, serif)",
-                      fontSize: "0.92rem",
-                      lineHeight: 1.6,
-                      color: "var(--text-muted, #7a5845)",
-                      margin: 0,
-                    }}
-                  >
-                    {item.content}
-                  </p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

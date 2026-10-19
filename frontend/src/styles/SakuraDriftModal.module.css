@@ -1,0 +1,252 @@
+/* =============================================================
+   PIP.EXE — Sakura Drift Retro Popup Window (Cozy Edition)
+   Scoped CSS Module for the SakuraDriftModal component only.
+   ============================================================= */
+
+/* ── Cozy retro design tokens (scoped to the window, cascade to children) ── */
+.sdWindow {
+  --win-face:       #f3dfd6;   /* warm blush-grey */
+  --win-face-dark:  #e2c6bb;
+  --win-title:      #5a2d3a;   /* deep plum-brown */
+  --win-title-2:    #7b3f52;
+  --win-title-text: #fff4ec;   /* warm cream */
+  --win-hilite:     #fffaf5;   /* bevel light edge */
+  --win-shadow:     #b38f86;   /* bevel mid shadow */
+  --win-darkest:    #3a1d26;   /* bevel dark edge / outer border */
+  --accent-pink:    #f4a6bd;
+  --accent-gold:    #ffd88a;
+  --text-dark:      #3a1d26;
+
+  --font-pixel: "VT323", "Press Start 2P", "Courier New", ui-monospace, monospace;
+  --font-cozy:  "Quicksand", "Nunito", system-ui, sans-serif;
+}
+
+/* ── 1) Outer popup window frame ── */
+.sdWindow {
+  background: var(--win-face);
+  padding: 3px;
+  border-radius: 4px;
+  box-shadow:
+    inset -2px -2px 0 var(--win-shadow),
+    inset  2px  2px 0 var(--win-hilite),
+    0 0 0 2px var(--win-darkest),
+    6px 8px 0 rgba(58, 29, 38, .35),
+    0 18px 40px rgba(244, 166, 189, .25);
+}
+
+/* window "pops in" on open — retro steps easing */
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.sdPopIn {
+  animation: popIn 180ms steps(4) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdPopIn { animation: none; }
+  .sdBtn  { transition: none; }
+}
+
+/* ── 2) Title bar = popup title ── */
+.sdTitlebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  background: linear-gradient(90deg, var(--win-title), var(--win-title-2));
+  color: var(--win-title-text);
+  font-family: var(--font-pixel);
+  font-size: 20px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle scattered sakura-petal dots, very low opacity, not distracting */
+.sdTitlebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 14% 52%, var(--accent-pink) 1px, transparent 1px),
+    radial-gradient(circle at 50% 40%, var(--accent-pink) 1px, transparent 1px),
+    radial-gradient(circle at 86% 52%, var(--accent-pink) 1px, transparent 1px);
+  opacity: .16;
+}
+
+.sdTitle {
+  flex: 0 0 auto;
+  text-shadow: 1px 1px 0 var(--win-darkest);
+  position: relative;
+}
+
+/* readouts (pilot, time, drift) become little sunken "LCD" fields */
+.sdReadout {
+  padding: 1px 8px;
+  background: rgba(58, 29, 38, .55);
+  color: var(--accent-gold);
+  border: 1px solid var(--win-darkest);
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,.45), inset -1px -1px 0 rgba(255,255,255,.15);
+  font-family: var(--font-pixel);
+  font-size: 18px;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sdReadout b { color: var(--win-title-text); }
+.sdSpacer { flex: 1; min-width: 8px; }
+
+/* ── 3) Close button — square bevelled X ── */
+.sdClose {
+  width: 24px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: var(--win-face);
+  color: var(--text-dark);
+  font: 700 16px/1 var(--font-pixel);
+  border: 0;
+  border-radius: 2px;
+  box-shadow:
+    inset -1px -1px 0 var(--win-darkest),
+    inset  1px  1px 0 var(--win-hilite),
+    inset -2px -2px 0 var(--win-shadow);
+  cursor: pointer;
+}
+.sdClose:hover {
+  background: var(--accent-pink);
+  color: var(--win-darkest);
+}
+.sdClose:active {
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+  transform: translate(1px, 1px);
+}
+.sdClose:focus-visible {
+  outline: 2px dotted var(--win-title);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── 4) Window body (sunken field holding the canvas) ── */
+.sdBody {
+  margin: 4px 2px;
+  background: var(--win-face-dark);
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+  padding: 3px;
+  border-radius: 3px;
+}
+
+/* ── 5) Bottom status / button bar (OK / Cancel style) ── */
+.sdStatusbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: var(--win-face);
+  font-family: var(--font-cozy);
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.sdBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  min-height: 28px;
+  background: var(--win-face);
+  color: var(--text-dark);
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow:
+    inset -1px -1px 0 var(--win-darkest),
+    inset  1px  1px 0 var(--win-hilite),
+    inset -2px -2px 0 var(--win-shadow),
+    inset  2px  2px 0 #fff;
+  transition: background .12s ease, transform .06s ease;
+}
+.sdBtn:hover {
+  background: #ffe9ee;
+}
+.sdBtn:active {
+  transform: translate(1px, 1px);
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+}
+.sdBtn:focus-visible {
+  outline: 2px dotted var(--win-title);
+  outline-offset: -5px;
+  border-radius: 3px;
+}
+
+/* tiny raised key caps */
+.sdKey {
+  padding: 1px 8px;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: var(--win-face);
+  border: 1px solid var(--win-darkest);
+  border-radius: 3px;
+  box-shadow:
+    inset -1px -1px 0 var(--win-darkest),
+    inset  1px  1px 0 var(--win-hilite);
+}
+.sdKeySpace {
+  background: var(--accent-pink);
+  color: var(--win-darkest);
+}
+.sdKeyLabel {
+  font-family: var(--font-cozy);
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: .85;
+}
+
+/* ── 6) HUD badges inside the game (sunken LCD fields) ── */
+.sdHud {
+  padding: 2px 10px;
+  background: rgba(58, 29, 38, .8);
+  color: var(--accent-gold);
+  font-family: var(--font-pixel);
+  border: 1px solid var(--win-darkest);
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,.5), inset -1px -1px 0 rgba(255,255,255,.2);
+  border-radius: 2px;
+}
+
+/* steering sensitivity popover — match the retro palette */
+.sdPopover {
+  background: linear-gradient(180deg, #2b1d16 0%, #241711 100%);
+  border: 2px solid var(--accent-pink);
+  border-radius: 3px;
+}
+
+/* ── Responsiveness: cozy on narrow screens ── */
+@media (max-width: 639px) {
+  .sdTitlebar   { font-size: 16px; gap: 6px; }
+  .sdReadout    { font-size: 15px; padding: 1px 6px; }
+  .sdKey        { font-size: 12px; padding: 1px 6px; }
+  .sdKeyLabel   { font-size: 0.72rem; }
+  .sdBtn        { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+  .sdStatusbar  { font-size: 13px; gap: 6px; }
+}

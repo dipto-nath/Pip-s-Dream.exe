@@ -9,7 +9,7 @@ export function OriginStoryboard() {
   return (
     <Timeline
       title="How Pip Began"
-      periodLabel="Origin Story · Five Chapters"
+      periodLabel="Origin Story · Seven Chapters"
       imageUrl="/assets/pip_cloud_star.jpg"
       imageAlt="Pip riding a cozy cloud in the starlight sky with a unicorn plushie"
       textColor="var(--body-text)"
