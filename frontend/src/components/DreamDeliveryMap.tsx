@@ -261,42 +261,54 @@ export function DreamDeliveryMap() {
     };
   }, [selectedStopIndex, isModalOpen, handleSelectStop]);
 
-  // 3. Viewport Scroll Progress Tracking (Universal Page Scroll)
-  // As the section scrolls through the viewport, steps from dream 1 through 5
+  // 3. Viewport Scroll Progress Tracking for the Frozen Sticky Map
+  // Stays on Dream 1 while approaching, freezes on screen and steps 1->2->3->4->5, then unfreezes
   useEffect(() => {
     const onWindowScroll = () => {
-      if (!wrapperRef.current) return;
-      // If user recently interacted directly (within 1.1s), respect their action
+      const track = wrapperRef.current?.closest('.project-map-sticky-track') as HTMLElement | null;
+      if (!track) return;
       if (Date.now() - lastManualTimeRef.current < 1100) return;
       if (isTouring) return;
 
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const trackRect = track.getBoundingClientRect();
+      const card = track.querySelector('.project-card') as HTMLElement | null;
+      const cardRect = card ? card.getBoundingClientRect() : trackRect;
 
-      // Active zone: map moves through comfortable viewing center
-      const startY = vh * 0.70;
-      const endY = vh * 0.08;
-      const totalDist = startY - endY;
-      if (totalDist <= 0) return;
+      const stickyTop = cardRect.top;
+      const scrollDistance = trackRect.height - cardRect.height;
+      if (scrollDistance <= 0) return;
 
-      const rawProgress = (startY - rect.top) / totalDist;
-      if (rawProgress >= 0 && rawProgress <= 1) {
-        const targetIndex = Math.min(
-          DREAM_STOPS.length - 1,
-          Math.floor(rawProgress * DREAM_STOPS.length)
-        );
-        if (targetIndex !== selectedStopIndex) {
-          setSelectedStopIndex(targetIndex);
-          setIsCardVisible(true);
-          const stop = DREAM_STOPS[targetIndex];
-          if (soundEnabled) {
-            playChime(stop.chimeFreq);
-          }
+      // 1. Approaching: Map has not reached freeze position yet
+      // Stay locked on Dream 1 (never triggers early)
+      if (trackRect.top > stickyTop + 24) {
+        if (selectedStopIndex !== 0) {
+          setSelectedStopIndex(0);
+        }
+        return;
+      }
+
+      // 2. Frozen on screen: Step smoothly through 5 dreams as user scrolls
+      const scrolled = stickyTop - trackRect.top;
+      const progress = Math.max(0, Math.min(1, scrolled / scrollDistance));
+
+      const targetIndex = Math.min(
+        DREAM_STOPS.length - 1,
+        Math.floor(progress * DREAM_STOPS.length)
+      );
+
+      if (targetIndex !== selectedStopIndex) {
+        setSelectedStopIndex(targetIndex);
+        setIsCardVisible(true);
+        const stop = DREAM_STOPS[targetIndex];
+        if (soundEnabled) {
+          playChime(stop.chimeFreq);
         }
       }
     };
 
     window.addEventListener('scroll', onWindowScroll, { passive: true });
+    onWindowScroll();
+
     return () => {
       window.removeEventListener('scroll', onWindowScroll);
     };
@@ -397,24 +409,43 @@ export function DreamDeliveryMap() {
             Scroll or click a lantern to follow the dream route...
           </p>
 
-          <span
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.74rem',
-              fontWeight: 700,
-              color: 'var(--accent)',
-              background: 'var(--control-surface)',
-              border: '1px solid var(--border-warm)',
-              padding: '3px 10px',
-              borderRadius: 'var(--radius-pill)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              boxShadow: '0 2px 4px var(--control-shadow)',
-            }}
-          >
-            <span>Stop 0{selectedStopIndex + 1} of 05</span>
-          </span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            {/* 5 Route Stepper Indicator Dots */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} aria-label={`Route step ${selectedStopIndex + 1} of 5`}>
+              {DREAM_STOPS.map((s, idx) => (
+                <div
+                  key={s.id}
+                  style={{
+                    width: idx === selectedStopIndex ? '16px' : '6px',
+                    height: '6px',
+                    borderRadius: '3px',
+                    background: idx === selectedStopIndex ? 'var(--vintage-berry)' : 'var(--border-warm)',
+                    transition: 'all 0.25s ease',
+                  }}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+
+            <span
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                color: 'var(--accent)',
+                background: 'var(--control-surface)',
+                border: '1px solid var(--border-warm)',
+                padding: '3px 10px',
+                borderRadius: 'var(--radius-pill)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                boxShadow: '0 2px 4px var(--control-shadow)',
+              }}
+            >
+              <span>Stop 0{selectedStopIndex + 1} of 05</span>
+            </span>
+          </div>
         </div>
       </div>
 
