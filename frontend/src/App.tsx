@@ -16,6 +16,7 @@ import { SpotlightCursor } from './components/ui/spotlight-cursor';
 import { DraggableDreamWindow } from './components/DraggableDreamWindow';
 import { SakuraDriftModal } from './components/SakuraDriftModal';
 import { SakuraHopModal } from './components/SakuraHopModal';
+import { VisitorCounterModal } from './components/VisitorCounterModal';
 import { usePersistentState } from './hooks/usePersistentState';
 import { useIsMobile } from './hooks/useIsMobile';
 import { getAudioEngine } from './lib/audioEngine';
@@ -177,6 +178,9 @@ export default function App() {
         ) : (
           <SakuraDriftModal isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
         )}
+
+        {/* Cozy Retro System Window Visitor Counter Widget */}
+        <VisitorCounterModal />
       </div>
     </SoundProvider>
   );

@@ -37,33 +37,37 @@ serve(async (req) => {
   }
 
   const isVisitsPath = path === '/visits' || path === '/api/visits' || path === '/' || path.endsWith('/visits');
+
+  if (isVisitsPath && method === 'GET') {
+    const { data: countData } = await supabase
+      .from('visitor_count')
+      .select('count')
+      .eq('id', 'total')
+      .single();
+    const total = Number(countData?.count ?? 0);
+    return new Response(
+      JSON.stringify({ total, success: true }),
+      { status: 200, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } },
+    );
+  }
+
   if (isVisitsPath && method === 'POST') {
+    let sessionId = '';
     const contentLength = Number(req.headers.get('content-length') ?? 0);
-    if (contentLength > 64 * 1024) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Payload too large.' }),
-        { status: 413, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
-      );
+    if (contentLength > 0 && contentLength <= 64 * 1024) {
+      try {
+        const input = await req.json();
+        const obj = (input ?? {}) as Record<string, unknown>;
+        if (typeof obj.sessionId === 'string' && obj.sessionId.trim().length > 0) {
+          sessionId = obj.sessionId.trim();
+        }
+      } catch {
+        // Fall back to anonymous session
+      }
     }
 
-    let input: unknown;
-    try {
-      input = await req.json();
-    } catch {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid JSON body.' }),
-        { status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
-      );
-    }
-
-    const obj = (input ?? {}) as Record<string, unknown>;
-    const sessionId = obj.sessionId;
-
-    if (typeof sessionId !== 'string' || sessionId.trim().length === 0 || sessionId.length > 256) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid session.' }),
-        { status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
-      );
+    if (!sessionId) {
+      sessionId = 'anon_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
     }
 
     const sessionHash = await hashSessionId(sessionId);
@@ -77,39 +81,32 @@ serve(async (req) => {
     // Even if insert fails due to unique constraint (already visited),
     // we still return success — the visit is recorded idempotently.
     if (insertError && insertError.code !== '23505') {
-      // Genuine error
       return new Response(
-        JSON.stringify({ success: false, error: 'Could not record your visit right now.' }),
-        { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
+        JSON.stringify({ total: 0, error: 'Could not record your visit right now.' }),
+        { status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } },
       );
     }
 
     // Fetch updated total
-    const { data: countData, error: countError } = await supabase
+    const { data: countData } = await supabase
       .from('visitor_count')
       .select('count')
       .eq('id', 'total')
       .single();
 
-    if (countError || !countData) {
-      return new Response(
-        JSON.stringify({ success: true, data: { counted: !insertError, total: 0 } }),
-        { status: 200, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
-      );
-    }
-
-    const total = Number(countData.count);
+    const total = Number(countData?.count ?? 0);
     return new Response(
       JSON.stringify({
+        total,
         success: true,
         data: { counted: !insertError, total },
       }),
-      { status: 200, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } },
     );
   }
 
   return new Response(
-    JSON.stringify({ success: false, error: 'Not found' }),
+    JSON.stringify({ error: 'Not found' }),
     { status: 404, headers: { ...corsHeaders(), 'Content-Type': 'application/json' } },
   );
 });

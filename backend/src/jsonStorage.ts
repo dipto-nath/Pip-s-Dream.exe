@@ -186,6 +186,25 @@ export class JsonStorage implements GuestbookStorage, VisitStorage {
     });
   }
 
+  /**
+   * Atomic visitor counter increment.
+   * Privacy-friendly: zero personal data stored (no IP, no user agent).
+   * Guarded by withFileLock for concurrency safety.
+   */
+  async incrementVisits(): Promise<number> {
+    return this.withFileLock(async () => {
+      const data = await this.readData();
+      const visit: VisitRecord = {
+        id: generateId(),
+        session_hash: 'anon_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        created_at: new Date().toISOString(),
+      };
+      data.visits.push(visit);
+      await this.writeData(data);
+      return data.visits.length;
+    });
+  }
+
   // ── Scores (Sakura Drift Mini-Game) ──
 
   async saveScore(score: number, nickname?: string, laps?: number): Promise<{ success: boolean; best: number }> {

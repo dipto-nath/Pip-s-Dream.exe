@@ -47,10 +47,25 @@
   --guestbook-paper:    #fffbf5;
   --star-color:         #f59e0b;
 
+  /* ── Cozy Retro Window Tokens (:root) ── */
+  --win-face:           #f3dfd6;   /* warm blush face */
+  --win-face-dark:      #e2c6bb;
+  --win-title:          #5a2d3a;   /* deep plum-brown */
+  --win-title-2:        #7b3f52;   /* plum gradient end */
+  --win-title-text:     #fff4ec;   /* warm cream */
+  --win-hilite:         #fffaf5;   /* bevel light edge */
+  --win-shadow:         #b38f86;   /* bevel mid shadow */
+  --win-darkest:        #3a1d26;   /* bevel dark edge / outer border */
+  --accent-pink:        #f4a6bd;
+  --accent-gold:        #ffd88a;
+  --text-dark:          #3a1d26;
+
   /* ── Typography ── */
   --font-display:       'Fraunces', Georgia, serif;
   --font-ui:            'Fredoka', 'Nunito', system-ui, sans-serif;
   --font-story:         'Lora', Georgia, serif;
+  --font-pixel:         'VT323', 'Courier New', monospace;
+  --font-cozy:          'Quicksand', 'Nunito', system-ui, sans-serif;
 
   /* ── Spacing Scale ── */
   --sp-1: 0.25rem;

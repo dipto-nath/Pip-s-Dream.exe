@@ -26,6 +26,8 @@ export interface VisitStorage {
   getStats(): Promise<VisitorStats>;
   /** Record a visit idempotently. Returns whether a new visit was counted. */
   recordVisit(sessionHash: string): Promise<{ counted: boolean; total: number }>;
+  /** Atomic visitor counter increment (zero personal data stored). */
+  incrementVisits?(): Promise<number>;
   /** Check overall database health. */
   isHealthy(): Promise<boolean>;
 }

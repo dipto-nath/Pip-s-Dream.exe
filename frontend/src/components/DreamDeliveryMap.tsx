@@ -1063,100 +1063,228 @@ export function DreamDeliveryMap() {
         </div>
 
         {/* Mobile Dedicated Dream Story Card */}
-        <div
-          className="dream-floating-card-mobile"
-          style={{
-            width: '100%',
-            background: 'var(--control-surface)',
-            border: '1.5px solid var(--border-warm)',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: '0 8px 24px var(--shadow-warm)',
-            padding: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <img
-              src={currentStop.image}
-              alt={currentStop.title}
+        {isCardVisible ? (
+          <div
+            className="dream-floating-card-mobile"
+            style={{
+              position: 'relative',
+              width: '100%',
+              background: 'var(--control-surface)',
+              border: '1.5px solid var(--border-warm)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: '0 8px 24px var(--shadow-warm)',
+              padding: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+            }}
+          >
+            {/* Top Close Button for Mobile Card */}
+            <button
+              onClick={() => setIsCardVisible(false)}
+              title="Close card"
+              aria-label="Close dream card"
               style={{
-                width: '84px',
-                height: '64px',
-                objectFit: 'cover',
-                borderRadius: 'var(--radius-sm)',
-                flexShrink: 0,
-                border: '1px solid var(--border-warm)',
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: 'var(--surface-inset)',
+                color: 'var(--body-text)',
+                border: '1px solid var(--control-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 5,
               }}
-            />
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: '0.68rem',
-                  color: 'var(--accent)',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '2px',
-                }}
-              >
-                Stop 0{selectedStopIndex + 1}
-              </div>
-              <h3
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1rem',
-                  fontWeight: 700,
-                  color: 'var(--body-text)',
-                  margin: '0 0 2px',
-                  lineHeight: 1.2,
-                }}
-              >
-                {currentStop.title}
-              </h3>
-              <p
-                style={{
-                  fontSize: '0.78rem',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.4,
-                  margin: 0,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {currentStop.description}
-              </p>
-            </div>
-          </div>
+            >
+              <X size={15} />
+            </button>
 
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', paddingRight: '28px' }}>
+              <img
+                src={currentStop.image}
+                alt={currentStop.title}
+                style={{
+                  width: '84px',
+                  height: '64px',
+                  objectFit: 'cover',
+                  borderRadius: 'var(--radius-sm)',
+                  flexShrink: 0,
+                  border: '1px solid var(--border-warm)',
+                }}
+              />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.68rem',
+                    color: 'var(--accent)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginBottom: '2px',
+                  }}
+                >
+                  Stop 0{selectedStopIndex + 1}
+                </div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    color: 'var(--body-text)',
+                    margin: '0 0 2px',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {currentStop.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.4,
+                    margin: 0,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {currentStop.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile Destination Chime Controls (Play + Stop) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                padding: '6px 0',
+                borderTop: '1px solid var(--border-warm)',
+                borderBottom: '1px solid var(--border-warm)',
+              }}
+            >
+              <button
+                onClick={handlePlayChime}
+                disabled={isPlayingChime}
+                aria-label={`Play destination chime for ${currentStop.title}`}
+                style={{
+                  flex: 1,
+                  minWidth: '140px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  background: isPlayingChime ? 'rgba(245, 158, 11, 0.22)' : 'rgba(251, 191, 36, 0.15)',
+                  color: 'var(--accent)',
+                  border: isPlayingChime ? '1px solid rgba(245, 158, 11, 0.7)' : '1px solid rgba(245, 158, 11, 0.4)',
+                  padding: '7px 12px',
+                  borderRadius: 'var(--radius-pill)',
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: isPlayingChime ? 'default' : 'pointer',
+                  boxShadow: isPlayingChime ? '0 0 12px rgba(245, 158, 11, 0.45)' : undefined,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {isPlayingChime ? (
+                  <>
+                    <Music size={13} style={{ color: 'var(--amber)', animation: 'spin-slow 3s linear infinite' }} />
+                    <span>Chiming...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play size={12} fill="currentColor" />
+                    <span>Play Destination Chime</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleStopChime}
+                disabled={!isPlayingChime}
+                aria-label="Stop destination chime"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  background: isPlayingChime ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.04)',
+                  color: isPlayingChime ? '#E05D52' : 'var(--text-muted)',
+                  border: isPlayingChime ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid var(--border-warm)',
+                  padding: '7px 12px',
+                  borderRadius: 'var(--radius-pill)',
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: !isPlayingChime ? 'not-allowed' : 'pointer',
+                  opacity: !isPlayingChime ? 0.4 : 1,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Square size={10} fill="currentColor" />
+                <span>Stop</span>
+              </button>
+            </div>
+
+            <button
+              onClick={handleOpenModal}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                background: 'var(--vintage-berry)',
+                color: '#FFF8F1',
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                padding: '8px 14px',
+                borderRadius: 'var(--radius-pill)',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 10px var(--shadow-warm)',
+              }}
+            >
+              <span>View Full Dream Lore</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
+        ) : (
           <button
-            onClick={handleOpenModal}
+            onClick={() => setIsCardVisible(true)}
             style={{
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
-              background: 'var(--vintage-berry)',
-              color: '#FFF8F1',
+              gap: '8px',
+              background: 'var(--control-surface)',
+              border: '1px solid var(--control-border)',
+              padding: '10px 16px',
+              borderRadius: 'var(--radius-md)',
               fontFamily: 'var(--font-ui)',
               fontSize: '0.82rem',
               fontWeight: 600,
-              padding: '8px 14px',
-              borderRadius: 'var(--radius-pill)',
-              border: 'none',
+              color: 'var(--body-text)',
               cursor: 'pointer',
-              boxShadow: '0 4px 10px var(--shadow-warm)',
+              boxShadow: '0 4px 12px var(--control-shadow)',
             }}
           >
-            <span>View Full Dream Lore</span>
-            <ArrowRight size={13} />
+            <BookOpen size={14} style={{ color: 'var(--accent)' }} />
+            <span>Open Dream Card (Stop 0{selectedStopIndex + 1})</span>
           </button>
-        </div>
+        )}
 
         {/* Mobile Bottom Controls Bar */}
         <div
@@ -1256,6 +1384,37 @@ export function DreamDeliveryMap() {
                 boxShadow: '0 24px 60px var(--shadow-deep)',
               }}
             >
+              {/* High-visibility Sticky Close Cross Button (always visible on mobile) */}
+              <button
+                onClick={handleCloseModal}
+                aria-label="Close dream log"
+                title="Close (Esc)"
+                className="dream-modal-close-btn"
+                style={{
+                  position: 'sticky',
+                  top: '12px',
+                  float: 'right',
+                  marginRight: '12px',
+                  marginTop: '12px',
+                  marginBottom: '-48px',
+                  zIndex: 60,
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  background: 'rgba(28, 16, 25, 0.94)',
+                  color: '#FFF8F1',
+                  border: '2px solid rgba(255, 255, 255, 0.9)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease, background 0.15s ease, border-color 0.15s ease',
+                }}
+              >
+                <X size={20} strokeWidth={2.4} />
+              </button>
+
               {/* Modal Banner Image */}
               <div style={{ position: 'relative', width: '100%', height: 'clamp(140px, 30vw, 200px)' }}>
                 <img
@@ -1267,33 +1426,6 @@ export function DreamDeliveryMap() {
                     objectFit: 'cover',
                   }}
                 />
-                {/* High-visibility Close Cross Button */}
-                <button
-                  onClick={handleCloseModal}
-                  aria-label="Close dream log"
-                  title="Close (Esc)"
-                  className="dream-modal-close-btn"
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    zIndex: 30,
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: 'rgba(28, 16, 25, 0.92)',
-                    color: '#FFF8F1',
-                    border: '2px solid rgba(255, 255, 255, 0.85)',
-                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.15s ease, background 0.15s ease, border-color 0.15s ease',
-                  }}
-                >
-                  <X size={20} strokeWidth={2.4} />
-                </button>
               </div>
 
               {/* Modal Body */}

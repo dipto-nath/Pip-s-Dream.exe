@@ -72,19 +72,48 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (path === '/api/visits' && method === 'POST') {
-      const raw = await readBody(req);
-      let input: { sessionId?: string };
-      try { input = JSON.parse(raw); } catch {
-        sendJson(res, 400, { success: false, error: 'Invalid JSON' });
+    // Privacy-friendly visitor counter contract:
+    // GET /api/visits  -> { "total": number }
+    // POST /api/visits -> increments atomically, returns { "total": number }
+    // Zero personal data stored (no IP, no user agent, no cookies).
+    if (path === '/api/visits') {
+      if (method === 'GET') {
+        const stats = await storage.getStats();
+        res.setHeader('Cache-Control', 'no-store');
+        sendJson(res, 200, { total: stats.total_visits, success: true, data: stats });
         return;
       }
-      if (!input.sessionId || typeof input.sessionId !== 'string') {
-        sendJson(res, 400, { success: false, error: 'sessionId required' });
+      if (method === 'POST') {
+        const raw = await readBody(req);
+        let sessionId = '';
+        if (raw && raw.trim().length > 0) {
+          try {
+            const input = JSON.parse(raw);
+            if (typeof input?.sessionId === 'string') {
+              sessionId = input.sessionId;
+            }
+          } catch {
+            // Non-JSON or empty body is completely fine for anonymous visitor count
+          }
+        }
+
+        let total: number;
+        if (sessionId) {
+          const result = await handleRecordVisit(storage, sessionId);
+          total = result.data?.total ?? (await storage.getStats()).total_visits;
+        } else if (typeof storage.incrementVisits === 'function') {
+          total = await storage.incrementVisits();
+        } else {
+          const anonHash = 'anon_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+          const r = await storage.recordVisit(anonHash);
+          total = r.total;
+        }
+
+        res.setHeader('Cache-Control', 'no-store');
+        sendJson(res, 200, { total, success: true, data: { counted: true, total } });
         return;
       }
-      const result = await handleRecordVisit(storage, input.sessionId);
-      sendJson(res, result.status, { success: result.success, data: result.data, error: result.error });
+      sendJson(res, 405, { success: false, error: 'Method not allowed' });
       return;
     }
 
