@@ -1148,20 +1148,18 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
           {/* Right Status Readouts & Close Button */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
-            <span className={styles.sdSpacer} />
             <span className={styles.sdReadout}>TIME <b id="time">{hudTime}</b></span>
             <span className={styles.sdReadout}>DRIFT <b id="drift">x{hudMult} {hudScore.toLocaleString()}</b></span>
-
-            <button
-              type="button"
-              className={styles.sdClose}
-              onClick={onClose}
-              title="Close (ESC)"
-              aria-label="Close Sakura Drift game"
-            >
-              <X size={15} />
-            </button>
           </div>
+          <button
+            type="button"
+            className={styles.sdClose}
+            onClick={onClose}
+            title="Close (ESC)"
+            aria-label="Close Sakura Drift game"
+          >
+            <X size={15} />
+          </button>
         </div>
 
         {/* Inner Canvas Frame */}
@@ -1174,7 +1172,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
 
             {/* Top-Left HUD */}
             <div className="absolute top-3 left-3 pointer-events-none flex flex-col gap-1.5">
-              <div className={`flex items-center gap-3 ${styles.sdHud} text-xs max-w-[155px] overflow-hidden`}>
+              <div className={`flex items-center gap-3 ${styles.sdHud} text-xs overflow-hidden min-w-[130px]`}>
                 <span className="text-[#F6A9BE] font-semibold flex items-center gap-1">
                   <Trophy size={12} /> BEST:
                 </span>
@@ -1278,7 +1276,7 @@ export function SakuraDriftModal({ isOpen, onClose }: SakuraDriftModalProps) {
               <span className="text-[11px] text-[#C9B3A3] font-medium ml-0.5">Drive</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className={styles.sdKeySpace}>SPACE</kbd>
+              <kbd className={`${styles.sdKey} ${styles.sdKeySpace}`}>SPACE</kbd>
               <span className="text-[11px] text-[#F6A9BE] font-semibold">Sakura Drift</span>
             </span>
           </div>

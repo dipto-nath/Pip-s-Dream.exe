@@ -435,3 +435,22 @@ button {
     display: none !important;
   }
 }
+
+/* ── Mobile Responsive Header & Sticky Controls ── */
+/* Header stays sticky on desktop, but scrolls away naturally with page scroll on mobile */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .project-map-sticky-box {
+    top: clamp(10px, 2.5vh, 18px) !important;
+  }
+}

@@ -39,11 +39,12 @@ export function SiteHeader({ theme, onThemeToggle, chaosMode, onChaosToggle, onP
 
   return (
     <header
+      className="site-header"
       style={{
         background: 'var(--deep-wood)',
         borderBottom: '2px solid var(--border-strong)',
-        position: 'sticky',
-        top: 0,
+        position: isMobile ? 'relative' : 'sticky',
+        top: isMobile ? 'auto' : 0,
         zIndex: 100,
         boxShadow: '0 2px 8px var(--shadow-deep)',
       }}

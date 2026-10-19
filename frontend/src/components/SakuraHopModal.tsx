@@ -461,26 +461,6 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
       ctx.fillStyle = '#221422';
       ctx.fillRect(0, 0, MW, MH);
 
-      // Golden Nursery Moon
-      const moonGrad = ctx.createRadialGradient(MW - 65, 75, 4, MW - 65, 75, 28);
-      moonGrad.addColorStop(0, 'rgba(255, 235, 175, 1)');
-      moonGrad.addColorStop(0.7, 'rgba(243, 198, 111, 0.9)');
-      moonGrad.addColorStop(1, 'rgba(243, 198, 111, 0)');
-      ctx.fillStyle = moonGrad;
-      ctx.beginPath();
-      ctx.arc(MW - 65, 75, 28, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Crescent Moon shape
-      ctx.fillStyle = '#FCE3A1';
-      ctx.beginPath();
-      ctx.arc(MW - 65, 75, 19, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#221422';
-      ctx.beginPath();
-      ctx.arc(MW - 71, 71, 15, 0, Math.PI * 2);
-      ctx.fill();
-
       // Twinkling Stars
       g.bgStars.forEach((st) => {
         st.t += 0.035;
