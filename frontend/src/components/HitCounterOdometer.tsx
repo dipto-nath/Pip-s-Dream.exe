@@ -1,13 +1,12 @@
 // =============================================================
 // PIP.EXE — HitCounterOdometer
-// Luxury vintage mechanical rolling dream odometer.
-// Authoritative global visitor registry synced with backend,
-// 3D cylindrical mechanical tumbling digits, live satellite beacon,
-// and interactive Web Audio dream pulse feedback.
+// Cozy storybook global visitor registry.
+// Synced with backend, smooth mechanical rolling digits,
+// live status indicator, and interactive dream pulse feedback.
 // =============================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { RotateCw, Sparkles, Moon, Radio } from 'lucide-react';
+import { RotateCw, Sparkles, Moon } from 'lucide-react';
 import { recordVisit, fetchVisitorStats, getSessionId, formatCount } from '../lib/visitService';
 
 // 20-digit rolling strip for continuous analog tumble
@@ -21,30 +20,8 @@ interface DreamParticle {
   dyEnd: number;
 }
 
-/** Slotted vintage brass rivet for authentic hardware aesthetics */
-function BrassRivet() {
-  return (
-    <div
-      className="w-3 h-3 rounded-full flex items-center justify-center select-none shadow-sm"
-      style={{
-        background: 'radial-gradient(circle at 35% 35%, #FFEBAA 0%, #D4AF37 55%, #8C6D1F 100%)',
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.65), 0 1px 3px rgba(0,0,0,0.7)',
-      }}
-      aria-hidden="true"
-    >
-      <div
-        className="w-1.5 h-[1.5px]"
-        style={{
-          background: 'rgba(58, 36, 24, 0.85)',
-          transform: 'rotate(45deg)',
-        }}
-      />
-    </div>
-  );
-}
-
-/** 3D Mechanical Rolling Odometer Drum Wheel */
-function OdometerDrum({
+/** Single rolling digit column within the unified display window */
+function OdometerDigit({
   digit,
   delayIndex,
   hasAnimated,
@@ -59,55 +36,36 @@ function OdometerDrum({
 
   return (
     <div
-      className="relative overflow-hidden select-none"
       style={{
-        width: 'clamp(24px, 3.8vw, 34px)',
-        height: 'clamp(40px, 5.5vw, 50px)',
-        borderRadius: '6px',
-        background: 'linear-gradient(180deg, #090406 0%, #201017 35%, #2B1520 50%, #201017 65%, #090406 100%)',
-        border: '1.5px solid rgba(243, 198, 111, 0.4)',
-        boxShadow: 'inset 0 8px 12px rgba(0,0,0,0.95), inset 0 -8px 12px rgba(0,0,0,0.95), 0 2px 6px rgba(0,0,0,0.6)',
+        width: 'clamp(22px, 3.2vw, 28px)',
+        height: 'clamp(38px, 5.2vw, 46px)',
+        position: 'relative',
+        overflow: 'hidden',
+        userSelect: 'none',
       }}
     >
-      {/* 3D Cylindrical Reflection Line across center seam */}
-      <div
-        className="absolute inset-x-0 top-1/2 pointer-events-none z-10"
-        style={{
-          height: '1px',
-          background: 'rgba(255, 245, 215, 0.22)',
-          boxShadow: '0 0 6px rgba(243, 198, 111, 0.5)',
-        }}
-      />
-
-      {/* Top & Bottom 3D Cylinder Curvature Shadows */}
-      <div
-        className="absolute inset-x-0 top-0 h-3.5 pointer-events-none z-10"
-        style={{ background: 'linear-gradient(180deg, rgba(9,4,6,0.95) 0%, transparent 100%)' }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-3.5 pointer-events-none z-10"
-        style={{ background: 'linear-gradient(0deg, rgba(9,4,6,0.95) 0%, transparent 100%)' }}
-      />
-
       {/* Rolling Numbers Strip */}
       <div
         style={{
           transform: `translateY(${translateY}%)`,
-          transition: 'transform 1.9s cubic-bezier(0.12, 0.8, 0.25, 1)',
-          transitionDelay: `${(6 - delayIndex) * 90}ms`,
+          transition: 'transform 1.8s cubic-bezier(0.16, 1, 0.3, 1)',
+          transitionDelay: `${(6 - delayIndex) * 75}ms`,
           willChange: 'transform',
         }}
       >
         {DIGIT_REEL.map((num, i) => (
           <div
             key={i}
-            className="flex items-center justify-center font-bold"
             style={{
-              height: 'clamp(40px, 5.5vw, 50px)',
+              height: 'clamp(38px, 5.2vw, 46px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               fontFamily: '"JetBrains Mono", var(--font-mono, monospace)',
-              fontSize: 'clamp(1.2rem, 2.5vw, 1.65rem)',
-              color: '#FFEBB0',
-              textShadow: '0 0 10px rgba(243, 198, 111, 0.8), 0 1px 3px rgba(0,0,0,0.95)',
+              fontWeight: 700,
+              fontSize: 'clamp(1.25rem, 2.5vw, 1.6rem)',
+              color: '#FFEAB2',
+              textShadow: '0 0 10px rgba(243, 198, 111, 0.6)',
               letterSpacing: '-0.02em',
             }}
           >
@@ -119,19 +77,24 @@ function OdometerDrum({
   );
 }
 
-/** Vintage copper comma separator between thousands */
+/** Clean natural comma separator */
 function CommaSeparator() {
   return (
     <div
-      className="flex items-end justify-center pb-1.5 select-none font-bold"
       style={{
         width: 'clamp(8px, 1.2vw, 12px)',
-        height: 'clamp(40px, 5.5vw, 50px)',
+        height: 'clamp(38px, 5.2vw, 46px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         fontFamily: '"JetBrains Mono", var(--font-mono, monospace)',
-        fontSize: 'clamp(1.2rem, 2.2vw, 1.55rem)',
-        color: '#D4AF37',
-        textShadow: '0 0 8px rgba(243, 198, 111, 0.7)',
+        fontWeight: 700,
+        fontSize: 'clamp(1.1rem, 2.2vw, 1.4rem)',
+        color: 'rgba(243, 198, 111, 0.75)',
+        textShadow: '0 0 8px rgba(243, 198, 111, 0.5)',
         lineHeight: 1,
+        paddingBottom: '2px',
+        userSelect: 'none',
       }}
       aria-hidden="true"
     >
@@ -140,7 +103,7 @@ function CommaSeparator() {
   );
 }
 
-/** Synthesize soothing 4-bell lullaby chime for dream pulse */
+/** Synthesize soothing lullaby chime for dream pulse */
 function playPulseChime() {
   try {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -150,7 +113,7 @@ function playPulseChime() {
       ctx.resume().catch(() => {});
     }
     const now = ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 (crystal bell)
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -189,7 +152,6 @@ export function HitCounterOdometer() {
         setCount(result.total);
         setIsOnline(result.isOnline);
         setLoading(false);
-        // Kick off mechanical roll after initial render
         requestAnimationFrame(() => {
           setTimeout(() => {
             if (mounted) setHasAnimated(true);
@@ -238,21 +200,20 @@ export function HitCounterOdometer() {
     setPulseActive(true);
     setTimeout(() => setPulseActive(false), 900);
 
-    // Launch floating dream sparkle particles
-    const icons = ['🌸', '✨', '⭐', '🌙', '💫', '✦'];
+    // Launch gentle floating dream sparkle particles
+    const icons = ['🌸', '✨', '⭐', '🌙', '💫'];
     const newParticles: DreamParticle[] = icons.map((icon, i) => ({
       id: Date.now() + i,
       icon,
-      dx: (Math.random() - 0.5) * 140,
-      dy: -(Math.random() * 40 + 20),
-      dyEnd: -(Math.random() * 60 + 55),
+      dx: (Math.random() - 0.5) * 120,
+      dy: -(Math.random() * 35 + 15),
+      dyEnd: -(Math.random() * 50 + 45),
     }));
     setParticles((prev) => [...prev, ...newParticles]);
     setTimeout(() => {
       setParticles([]);
     }, 1800);
 
-    // Refresh latest count from registry
     handleRefresh();
 
     setPulseToast(`✨ Dream pulse sent! You are Dreamer #${count || 17} 🌙`);
@@ -265,131 +226,172 @@ export function HitCounterOdometer() {
 
   return (
     <div
-      className="relative flex flex-col items-center select-none w-full max-w-[490px] mx-auto p-4 sm:p-5 rounded-[22px]"
       style={{
-        background: 'linear-gradient(180deg, #2D1A14 0%, #1A0D0A 100%)',
-        border: '2.5px solid #DEC3A7',
+        width: '100%',
+        maxWidth: '460px',
+        margin: '0 auto',
+        padding: '24px 28px',
+        borderRadius: '24px',
+        background: 'linear-gradient(180deg, #2A1722 0%, #1A0D15 100%)',
+        border: '1.5px solid rgba(243, 198, 111, 0.32)',
         boxShadow: pulseActive
-          ? '0 0 35px rgba(243, 198, 111, 0.6), 0 20px 50px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255, 245, 220, 0.3)'
-          : '0 16px 45px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255, 245, 220, 0.25), 0 0 22px rgba(243, 198, 111, 0.12)',
+          ? '0 0 32px rgba(243, 198, 111, 0.5), 0 16px 40px rgba(0,0,0,0.65)'
+          : '0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+        userSelect: 'none',
         transition: 'box-shadow 0.35s ease',
       }}
       aria-label={`Global Dream Visits: ${count.toLocaleString()}`}
     >
-      {/* 4 Corner Brass Rivets */}
-      <div className="absolute top-2.5 left-2.5"><BrassRivet /></div>
-      <div className="absolute top-2.5 right-2.5"><BrassRivet /></div>
-      <div className="absolute bottom-2.5 left-2.5"><BrassRivet /></div>
-      <div className="absolute bottom-2.5 right-2.5"><BrassRivet /></div>
-
-      {/* Top Header Plate */}
-      <div className="w-full flex items-center justify-between pb-2.5 px-2 border-b border-[#DEC3A7]/25 mb-3">
-        {/* Live Satellite Beacon */}
-        <div className="flex items-center gap-2">
-          {isOnline ? (
-            <div className="flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-ui, system-ui)',
-                  fontSize: '0.62rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  color: '#A8E6CF',
-                  textTransform: 'uppercase',
-                }}
-              >
-                LIVE DREAM SYNC
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-400 inline-block shadow-sm"></span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-ui, system-ui)',
-                  fontSize: '0.62rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  color: '#F3C66F',
-                  textTransform: 'uppercase',
-                }}
-              >
-                LOCAL DESK SYNC
-              </span>
-            </div>
-          )}
+      {/* Top Status & Sync Row */}
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingBottom: '14px',
+          marginBottom: '16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
+            <span
+              style={{
+                position: 'absolute',
+                display: 'inline-flex',
+                height: '100%',
+                width: '100%',
+                borderRadius: '50%',
+                opacity: 0.75,
+                background: isOnline ? '#34D399' : '#FBBF24',
+                animation: isOnline ? 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' : 'none',
+              }}
+            />
+            <span
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                borderRadius: '50%',
+                height: '8px',
+                width: '8px',
+                background: isOnline ? '#10B981' : '#F59E0B',
+              }}
+            />
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-ui, system-ui)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              color: isOnline ? '#A8E6CF' : '#F3C66F',
+              textTransform: 'uppercase',
+            }}
+          >
+            {isOnline ? 'Live Dream Sync' : 'Local Desk Sync'}
+          </span>
         </div>
 
-        {/* Sync / Refresh Button */}
         <button
           type="button"
           onClick={handleRefresh}
           disabled={isRefreshing}
           title="Refresh dream visitor registry"
-          className="flex items-center gap-1 text-[10px] text-[#DEC3A7]/80 hover:text-white bg-[#3B2219] hover:bg-[#4E2E22] border border-[#DEC3A7]/30 px-2 py-0.5 rounded-md transition cursor-pointer active:scale-95"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            color: 'rgba(222, 195, 167, 0.9)',
+            background: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid rgba(222, 195, 167, 0.25)',
+            padding: '4px 10px',
+            borderRadius: '9999px',
+            cursor: 'pointer',
+            transition: 'background 0.15s ease',
+          }}
         >
-          <RotateCw size={10} className={isRefreshing ? 'animate-spin text-[#F3C66F]' : 'text-[#F3C66F]'} />
-          <span className="font-mono text-[9px] uppercase tracking-wider">Sync</span>
+          <RotateCw size={11} style={{ color: '#F3C66F' }} className={isRefreshing ? 'animate-spin' : ''} />
+          <span style={{ fontFamily: 'var(--font-ui, system-ui)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Sync</span>
         </button>
       </div>
 
-      {/* Title Header Plate */}
-      <div className="text-center mb-3">
-        <div className="flex items-center justify-center gap-1.5 mb-0.5">
-          <Sparkles size={13} className="text-[#F3C66F]" />
+      {/* Title Header */}
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+          <Sparkles size={15} style={{ color: '#F3C66F' }} />
           <h4
             style={{
               fontFamily: 'var(--font-display, "Fraunces", Georgia, serif)',
-              fontWeight: 800,
-              fontSize: '1.05rem',
+              fontWeight: 700,
+              fontSize: '1.25rem',
               color: '#FFF8F1',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              textShadow: '0 2px 6px rgba(0,0,0,0.6)',
+              letterSpacing: '0.03em',
               margin: 0,
             }}
           >
             Global Dream Visits
           </h4>
-          <Sparkles size={13} className="text-[#F3C66F]" />
+          <Sparkles size={15} style={{ color: '#F3C66F' }} />
         </div>
-        <p className="text-[10px] sm:text-[11px] text-[#DEC3A7]/75 font-medium tracking-wide">
+        <p
+          style={{
+            fontFamily: 'var(--font-story, Georgia, serif)',
+            fontStyle: 'italic',
+            fontSize: '0.85rem',
+            color: 'rgba(255, 248, 241, 0.7)',
+            margin: 0,
+          }}
+        >
           The Midnight Nursery · Official Night Watch Registry
         </p>
       </div>
 
-      {/* Odometer Drum Display Window */}
+      {/* Unified Odometer Display Window */}
       <div
-        className="relative p-2 sm:p-2.5 rounded-[14px] flex items-center justify-center shadow-inner overflow-hidden mb-3"
         style={{
-          background: '#0E0709',
-          border: '2px solid rgba(222, 195, 167, 0.45)',
-          boxShadow: 'inset 0 4px 16px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '10px 22px',
+          borderRadius: '16px',
+          background: '#0F060C',
+          border: '1.5px solid rgba(243, 198, 111, 0.35)',
+          boxShadow: 'inset 0 3px 12px rgba(0, 0, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.3)',
+          marginBottom: '16px',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {/* Glass specular glare overlay */}
+        {/* Soft specular sheen across the window */}
         <div
-          className="absolute inset-0 pointer-events-none z-20"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, transparent 60%)',
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 20,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%)',
           }}
         />
 
-        {/* 7 Digit Drums with Comma Separators: X,XXX,XXX */}
-        <div className="flex items-center gap-1 sm:gap-1.5 z-10">
+        {/* 7 Digits with clean commas in a unified ticker window */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', zIndex: 10 }}>
           {loading ? (
-            <div className="flex items-center gap-1 sm:gap-1.5 py-1">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
               {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="animate-pulse rounded-md bg-[#2B1520]/80 border border-[#F3C66F]/20"
                   style={{
-                    width: 'clamp(24px, 3.8vw, 34px)',
-                    height: 'clamp(40px, 5.5vw, 50px)',
+                    width: 'clamp(22px, 3.2vw, 28px)',
+                    height: 'clamp(38px, 5.2vw, 46px)',
+                    borderRadius: '6px',
+                    background: '#23111D',
+                    border: '1px solid rgba(243, 198, 111, 0.2)',
                   }}
                 />
               ))}
@@ -397,45 +399,70 @@ export function HitCounterOdometer() {
           ) : (
             <>
               {/* Millions */}
-              <OdometerDrum digit={digits[0]} delayIndex={0} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[0]} delayIndex={0} hasAnimated={hasAnimated} />
 
               <CommaSeparator />
 
               {/* Thousands: hundred-thousands, ten-thousands, thousands */}
-              <OdometerDrum digit={digits[1]} delayIndex={1} hasAnimated={hasAnimated} />
-              <OdometerDrum digit={digits[2]} delayIndex={2} hasAnimated={hasAnimated} />
-              <OdometerDrum digit={digits[3]} delayIndex={3} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[1]} delayIndex={1} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[2]} delayIndex={2} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[3]} delayIndex={3} hasAnimated={hasAnimated} />
 
               <CommaSeparator />
 
               {/* Units: hundreds, tens, units */}
-              <OdometerDrum digit={digits[4]} delayIndex={4} hasAnimated={hasAnimated} />
-              <OdometerDrum digit={digits[5]} delayIndex={5} hasAnimated={hasAnimated} />
-              <OdometerDrum digit={digits[6]} delayIndex={6} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[4]} delayIndex={4} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[5]} delayIndex={5} hasAnimated={hasAnimated} />
+              <OdometerDigit digit={digits[6]} delayIndex={6} hasAnimated={hasAnimated} />
             </>
           )}
         </div>
       </div>
 
       {/* Dreamer Record Milestone Badge */}
-      <div className="mb-3.5 text-center px-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3B2219]/90 border border-[#DEC3A7]/35 text-[11px] text-[#FFEBB0] shadow-sm">
-          <Moon size={12} className="text-[#F3C66F]" />
+      <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 16px',
+            borderRadius: '9999px',
+            background: 'rgba(255, 248, 241, 0.06)',
+            border: '1px solid rgba(243, 198, 111, 0.22)',
+            fontSize: '0.8rem',
+            color: '#FFEBB0',
+            fontFamily: 'var(--font-ui, system-ui)',
+          }}
+        >
+          <Moon size={13} style={{ color: '#F3C66F' }} />
           <span>
-            You are Dreamer <strong className="text-[#F3C66F] font-mono font-bold">#{count.toLocaleString() || '17'}</strong> registered tonight
+            You are Dreamer <strong style={{ color: '#F3C66F', fontFamily: 'var(--font-mono, monospace)', fontWeight: 700 }}>#{count.toLocaleString() || '17'}</strong> registered tonight
           </span>
         </div>
       </div>
 
       {/* Interactive Action Bar: Send Dream Pulse */}
-      <div className="relative flex flex-col items-center w-full">
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         {/* Floating Particles on Pulse */}
-        <div className="absolute inset-0 pointer-events-none overflow-visible flex items-center justify-center">
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'visible',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {particles.map((p) => (
             <span
               key={p.id}
-              className="absolute text-[16px] pointer-events-none"
               style={{
+                position: 'absolute',
+                fontSize: '16px',
+                pointerEvents: 'none',
                 '--p-dx': `${p.dx}px`,
                 '--p-dy': `${p.dy}px`,
                 '--p-dy-end': `${p.dyEnd}px`,
@@ -450,25 +477,48 @@ export function HitCounterOdometer() {
         <button
           type="button"
           onClick={handleSendPulse}
-          className="relative px-5 py-2 rounded-xl text-white font-bold text-[12px] sm:text-[13px] flex items-center gap-2 shadow-lg transition active:scale-95 cursor-pointer hover:brightness-110"
           style={{
-            background: 'linear-gradient(135deg, #E85D75 0%, #C83E5B 100%)',
-            border: '1.5px solid #FFAAB8',
-            boxShadow: '0 4px 14px rgba(200, 62, 91, 0.45), 0 0 10px rgba(243, 198, 111, 0.2)',
+            background: 'var(--vintage-berry)',
+            color: '#FFF8F1',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            padding: '9px 24px',
+            borderRadius: '9999px',
+            fontFamily: 'var(--font-ui, system-ui)',
+            fontWeight: 600,
+            fontSize: '0.88rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
+            cursor: 'pointer',
+            transition: 'transform 0.15s ease, filter 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.12)';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.03)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.filter = 'none';
+            (e.currentTarget as HTMLButtonElement).style.transform = 'none';
           }}
         >
-          <Sparkles size={14} className="text-amber-200" />
+          <Sparkles size={14} style={{ color: '#FFEAA7' }} />
           <span>Send Dream Pulse</span>
-          <Radio size={13} className="text-pink-200" />
         </button>
 
         {/* Pulse Toast Feedback */}
         {pulseToast && (
           <div
-            className="mt-2.5 px-3 py-1 rounded-lg text-[11px] font-semibold text-[#FFF8F1] animate-fade-in text-center"
             style={{
-              background: 'rgba(58, 34, 25, 0.95)',
-              border: '1px solid rgba(243, 198, 111, 0.5)',
+              marginTop: '10px',
+              padding: '6px 16px',
+              borderRadius: '9999px',
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: '#FFF8F1',
+              textAlign: 'center',
+              background: 'rgba(38, 20, 30, 0.95)',
+              border: '1px solid rgba(243, 198, 111, 0.4)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
             }}
           >
