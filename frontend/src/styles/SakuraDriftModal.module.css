@@ -215,6 +215,11 @@
 .sdKeySpace {
   background: var(--accent-pink);
   color: var(--win-darkest);
+  /* wider, space-bar-shaped key cap */
+  min-width: 72px;
+}
+@media (max-width: 639px) {
+  .sdKeySpace { min-width: 56px; }
 }
 .sdKeyLabel {
   font-family: var(--font-cozy);

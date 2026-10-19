@@ -1,0 +1,279 @@
+/* =============================================================
+   PIP.EXE — Sakura Hop Retro Popup Window (Cozy Edition)
+   Scoped CSS Module for the SakuraHopModal component.
+   Follows the "Cozy Retro System Window" specification.
+   ============================================================= */
+
+.shWindow {
+  --win-face:        #f3dfd6;  /* window + button face */
+  --win-face-dark:   #e2c6bb;  /* sunken content area */
+  --win-title:       #5a2d3a;  /* title bar start */
+  --win-title-2:     #7b3f52;  /* title bar end */
+  --win-title-text:  #fff4ec;
+  --win-hilite:      #fffaf5;  /* bevel light edge */
+  --win-shadow:      #b38f86;  /* bevel mid shadow */
+  --win-darkest:     #3a1d26;  /* outer border / bevel dark edge */
+  --accent-pink:     #f4a6bd;  /* primary / hover / highlight */
+  --accent-gold:     #ffd88a;  /* readouts, scores, warnings */
+  --text-dark:       #3a1d26;
+  --font-pixel: "VT323", "Press Start 2P", "Courier New", ui-monospace, monospace;
+  --font-cozy:  "Quicksand", "Nunito", system-ui, sans-serif;
+
+  background: var(--win-face);
+  padding: 3px;
+  border-radius: 4px;
+  box-shadow:
+    inset -2px -2px 0 var(--win-shadow),
+    inset  2px  2px 0 var(--win-hilite),
+    0 0 0 2px var(--win-darkest),
+    6px 8px 0 rgba(58, 29, 38, .35),
+    0 18px 40px rgba(244, 166, 189, .25);
+}
+
+@keyframes rwPop {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.shPopIn {
+  animation: rwPop 180ms steps(4) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shPopIn { animation: none; }
+  .shBtn, .shClose { transition: none; }
+}
+
+/* ── 1. Title bar ── */
+.shTitlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  background: linear-gradient(90deg, var(--win-title), var(--win-title-2));
+  color: var(--win-title-text);
+  font-family: var(--font-pixel);
+  font-size: 19px;
+  line-height: 1.1;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 var(--win-darkest);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px 2px 0 0;
+}
+
+.shTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* LCD readouts for H: and PTS: */
+.shLcd {
+  padding: 1px 6px;
+  background: rgba(58, 29, 38, .6);
+  color: var(--accent-gold);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  line-height: 1.1;
+  border: 1px solid var(--win-darkest);
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,.45), inset -1px -1px 0 rgba(255,255,255,.15);
+  white-space: nowrap;
+  letter-spacing: .03em;
+  border-radius: 2px;
+}
+
+.shLcd b {
+  color: var(--win-title-text);
+}
+
+/* Square bevelled close button on far right */
+.shClose {
+  margin-left: auto;
+  width: 24px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: var(--win-face);
+  color: var(--text-dark);
+  font: 700 16px/1 var(--font-pixel);
+  border: 0;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow:
+    inset -1px -1px 0 var(--win-darkest),
+    inset  1px  1px 0 var(--win-hilite),
+    inset -2px -2px 0 var(--win-shadow);
+  transition: background .12s ease;
+  flex-shrink: 0;
+}
+
+.shClose:hover {
+  background: var(--accent-pink);
+  color: var(--win-darkest);
+}
+
+.shClose:active {
+  transform: translate(1px, 1px);
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+}
+
+.shClose:focus-visible {
+  outline: 2px dotted var(--win-title);
+  outline-offset: -2px;
+}
+
+/* ── 2. Body + Sunken content field ── */
+.shBody {
+  margin: 3px 2px;
+  background: var(--win-face-dark);
+  padding: 5px;
+  border-radius: 3px;
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inner arcade screen frame holding the canvas */
+.shCanvasFrame {
+  position: relative;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: 9 / 15;
+  max-width: 100%;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #221422;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--win-darkest);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.75),
+    inset 1px 1px 0 rgba(0,0,0,0.5),
+    0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* ── 3. Footer / Button row ── */
+.shStatusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  background: var(--win-face);
+  color: var(--text-dark);
+  font-family: var(--font-cozy);
+  font-size: 13px;
+  gap: 6px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--win-shadow);
+}
+
+.shHint {
+  font-family: var(--font-cozy);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.01em;
+}
+
+/* ── 4. Raised Bevelled Buttons (Ok / Cancel / Action) ── */
+.shBtn {
+  min-height: 28px;
+  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--win-face);
+  color: var(--text-dark);
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow:
+    inset -1px -1px 0 var(--win-darkest),
+    inset  1px  1px 0 var(--win-hilite),
+    inset -2px -2px 0 var(--win-shadow),
+    inset  2px  2px 0 #fff;
+  transition: background .12s ease, transform .06s ease;
+  user-select: none;
+}
+
+.shBtn:hover {
+  background: #ffe9ee;
+}
+
+.shBtn:active {
+  transform: translate(1px, 1px);
+  box-shadow:
+    inset  1px  1px 0 var(--win-darkest),
+    inset -1px -1px 0 var(--win-hilite),
+    inset  2px  2px 0 var(--win-shadow);
+}
+
+.shBtn:focus-visible {
+  outline: 2px dotted var(--win-title);
+  outline-offset: -5px;
+}
+
+.shBtnPrimary {
+  background: var(--accent-pink);
+  font-weight: 700;
+}
+
+.shBtnPrimary:hover {
+  background: #f7b9cb;
+}
+
+/* In-game Personal Best badge (sunken LCD) */
+.shBestBadge {
+  padding: 2px 8px;
+  background: rgba(58, 29, 38, .85);
+  color: var(--accent-gold);
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  border: 1px solid var(--win-darkest);
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,.5), inset -1px -1px 0 rgba(255,255,255,.2);
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Game Over dialog card (retro dialog box) */
+.shGameOverBox {
+  background: var(--win-face);
+  color: var(--text-dark);
+  border: 2px solid var(--win-darkest);
+  border-radius: 4px;
+  box-shadow:
+    inset -2px -2px 0 var(--win-shadow),
+    inset  2px  2px 0 var(--win-hilite),
+    4px 5px 0 rgba(58, 29, 38, 0.45);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  max-width: 260px;
+}

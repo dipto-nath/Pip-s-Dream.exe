@@ -9,7 +9,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X, Volume2, VolumeX, RotateCcw, Sparkles } from 'lucide-react';
 import { useVisitorMemory } from '../hooks/useVisitorMemory';
+import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { submitDriftScore } from '../lib/scoreService';
+import styles from '../styles/SakuraHopModal.module.css';
 
 interface SakuraHopModalProps {
   isOpen: boolean;
@@ -69,6 +71,7 @@ const MH = 700;
 export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { profile, saveDriftScore } = useVisitorMemory();
+  const prefersReduced = useReducedMotionPreference();
 
   // HUD State
   const [hudHeight, setHudHeight] = useState(0);
@@ -661,9 +664,11 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center backdrop-blur-md overflow-hidden"
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center overflow-hidden"
       style={{
-        backgroundColor: 'rgba(16, 9, 14, 0.90)',
+        backgroundColor: 'rgba(58, 29, 38, 0.55)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
         paddingTop: 'max(10px, env(safe-area-inset-top, 10px))',
         paddingBottom: 'max(10px, env(safe-area-inset-bottom, 10px))',
         paddingLeft: 'max(10px, env(safe-area-inset-left, 10px))',
@@ -674,102 +679,36 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
       }}
     >
       <div
-        className="relative w-full max-w-[420px] h-[95dvh] max-h-[760px] rounded-[22px] sm:rounded-[26px] p-2.5 sm:p-3 flex flex-col justify-between select-none overflow-hidden shadow-2xl"
-        style={{
-          background: 'linear-gradient(180deg, #2A1723 0%, #1A0E17 100%)',
-          border: '2px solid rgba(246, 169, 190, 0.35)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 28px rgba(246, 169, 190, 0.15)',
-        }}
+        className={`relative w-full max-w-[420px] h-[95dvh] max-h-[760px] flex flex-col justify-between select-none overflow-hidden ${styles.shWindow} ${prefersReduced ? '' : styles.shPopIn}`}
+        role="dialog"
+        aria-labelledby="sh-title"
       >
-        {/* Cabinet Header */}
-        <div className="flex items-center justify-between pb-2 px-1 flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[17px] leading-none" role="img" aria-label="Sakura blossom">🌸</span>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-display, "Fraunces", Georgia, serif)',
-                    fontWeight: 800,
-                    fontSize: '1.05rem',
-                    color: '#F6A9BE',
-                    letterSpacing: '0.04em',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  SAKURA
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-display, "Fraunces", Georgia, serif)',
-                    fontWeight: 800,
-                    fontSize: '1.05rem',
-                    color: '#FFF8F1',
-                    letterSpacing: '0.04em',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  HOP
-                </span>
-              </div>
-              <span className="text-[9px] uppercase tracking-wider font-semibold text-[#DEC3A7]/70">
-                Cozy Nursery Cloud Hop
-              </span>
-            </div>
+        {/* Retro Title Bar */}
+        <div className={styles.shTitlebar}>
+          <div className={styles.shTitle} id="sh-title">
+            <span>🌸</span>
+            <span>SAKURA HOP</span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Live Height Capsule */}
-            <div
-              className="flex items-center gap-1 px-2 py-1 rounded-lg"
-              style={{
-                background: 'rgba(58, 32, 45, 0.9)',
-                border: '1px solid rgba(222, 195, 167, 0.35)',
-              }}
-            >
-              <span className="text-[9px] font-bold text-[#DEC3A7]/80">H:</span>
-              <span className="font-mono font-bold text-[#FFF8F1] text-[11px]">{hudHeight}m</span>
-            </div>
-
-            {/* Live Score Capsule */}
-            <div
-              className="flex items-center gap-1 px-2 py-1 rounded-lg"
-              style={{
-                background: 'rgba(58, 32, 45, 0.9)',
-                border: '1px solid rgba(246, 169, 190, 0.45)',
-              }}
-            >
-              <span className="text-[9px] font-bold text-[#F6A9BE]">PTS:</span>
-              <span className="font-mono font-extrabold text-[#F3C66F] text-[12px]">{hudScore.toLocaleString()}</span>
-            </div>
-
-            {/* Prominent High-Contrast Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              title="Close game (Esc)"
-              aria-label="Close game"
-              className="w-[36px] h-[36px] rounded-full flex items-center justify-center text-white cursor-pointer active:scale-90 transition-transform shadow-md flex-shrink-0 ml-0.5"
-              style={{
-                background: 'linear-gradient(135deg, #E85D75 0%, #C83E5B 100%)',
-                border: '1.5px solid #FFAAB8',
-                boxShadow: '0 3px 10px rgba(200, 62, 91, 0.45)',
-              }}
-            >
-              <X size={18} strokeWidth={2.8} />
-            </button>
+          <div className="flex items-center gap-1.5 ml-auto">
+            <span className={styles.shLcd}>H: <b>{hudHeight}m</b></span>
+            <span className={styles.shLcd}>PTS: <b>{hudScore.toLocaleString()}</b></span>
           </div>
+
+          <button
+            type="button"
+            className={styles.shClose}
+            onClick={onClose}
+            title="Close game (Esc)"
+            aria-label="Close game"
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Canvas Viewport Frame — Reshaped Sleek 9:15 Arcade Aspect Ratio */}
-        <div className="flex-1 min-h-0 w-full flex items-center justify-center my-1">
-          <div
-            className="relative h-full max-h-full aspect-[9/15] max-w-full rounded-[16px] overflow-hidden bg-[#221422] flex items-center justify-center shadow-inner"
-            style={{
-              border: '2px solid rgba(222, 195, 167, 0.4)',
-              boxShadow: 'inset 0 0 24px rgba(0, 0, 0, 0.75), 0 6px 20px rgba(0, 0, 0, 0.4)',
-            }}
-          >
+        {/* Sunken Body Frame holding the 9:15 Canvas Viewport */}
+        <div className={styles.shBody}>
+          <div className={styles.shCanvasFrame}>
             <canvas
               ref={canvasRef}
               width={MW}
@@ -800,98 +739,100 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
               }}
             />
 
-            {/* In-game Personal Best pill */}
+            {/* In-game Personal Best badge */}
             <div className="absolute top-2.5 left-2.5 pointer-events-none z-10">
-              <div className="bg-[#1C1019]/85 backdrop-blur-xs border border-[#DEC3A7]/40 px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[10px] text-white shadow-md">
-                <Sparkles size={11} className="text-[#F3C66F]" />
-                <span className="text-[#F6A9BE] font-semibold text-[9px]">BEST:</span>
-                <span className="font-mono font-bold text-[#FCE3A1]">{hudBest.toLocaleString()}</span>
+              <div className={styles.shBestBadge}>
+                <Sparkles size={11} className="text-[#ffd88a]" />
+                <span className="font-semibold text-[11px] text-[#f4a6bd]">BEST:</span>
+                <b>{hudBest.toLocaleString()}</b>
               </div>
             </div>
 
             {/* Interactive Game Over Overlay with Exit & Restart Buttons */}
             {gameState === 'gameover' && (
               <div
-                className="absolute inset-0 bg-[#160B13]/92 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-20 select-none animate-fadeIn"
+                className="absolute inset-0 bg-[#160B13]/90 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center z-20 select-none animate-fadeIn"
               >
-                <div className="w-14 h-14 mb-2.5 rounded-full bg-[#341C29] border border-[#F6A9BE]/50 flex items-center justify-center text-2xl shadow-lg">
-                  🌙
-                </div>
-
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-display, "Fraunces", Georgia, serif)',
-                    fontWeight: 800,
-                    fontSize: '1.4rem',
-                    color: '#FAF0E1',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Sweet Dreams, Pip!
-                </h3>
-
-                <p className="text-[12px] text-[#DEC3A7]/90 mb-3.5">
-                  Pip hopped through the cozy clouds
-                </p>
-
-                <div className="bg-[#24131E]/95 border border-[#DEC3A7]/30 rounded-xl px-4 py-2.5 mb-3 w-full max-w-[240px] flex justify-around items-center shadow-md">
-                  <div>
-                    <div className="text-[10px] uppercase font-bold text-[#DEC3A7]/70">Height</div>
-                    <div className="text-[15px] font-mono font-bold text-[#FFF8F1]">{hudHeight}m</div>
-                  </div>
-                  <div className="w-px h-7 bg-[#DEC3A7]/25" />
-                  <div>
-                    <div className="text-[10px] uppercase font-bold text-[#F6A9BE]">Score</div>
-                    <div className="text-[16px] font-mono font-extrabold text-[#F3C66F]">{hudScore.toLocaleString()}</div>
-                  </div>
-                </div>
-
-                {isNewBest && (
-                  <div className="mb-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3C66F]/20 border border-[#F3C66F]/60 text-[#F3C66F] text-[11px] font-bold">
-                    <Sparkles size={12} /> NEW PERSONAL BEST!
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2 w-full max-w-[220px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      initAudio();
-                      resetGame();
-                      playNote(2);
-                    }}
-                    className="w-full py-2.5 px-4 rounded-xl font-bold text-[13px] text-white flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer"
+                <div className={styles.shGameOverBox}>
+                  <div className="text-2xl mb-1">🌙</div>
+                  <h3
                     style={{
-                      background: 'linear-gradient(135deg, #E85D75 0%, #C83E5B 100%)',
-                      border: '1.5px solid #FFAAB8',
-                      boxShadow: '0 4px 14px rgba(200, 62, 91, 0.45)',
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '1.4rem',
+                      fontWeight: 700,
+                      color: 'var(--text-dark)',
+                      marginBottom: '2px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '.04em',
                     }}
                   >
-                    <span>🌸</span>
-                    <span>Hop Again</span>
-                  </button>
+                    Sweet Dreams, Pip!
+                  </h3>
+                  <p style={{ fontFamily: 'var(--font-cozy)', fontSize: '12px', color: '#5a2d3a', marginBottom: '8px' }}>
+                    Pip hopped through the cozy clouds
+                  </p>
 
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="w-full py-2 px-4 rounded-xl font-semibold text-[12px] text-[#DEC3A7] hover:text-white bg-[#341C29] hover:bg-[#462637] border border-[#DEC3A7]/35 flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  <div
+                    className="flex justify-around items-center w-full mb-3 px-3 py-1.5"
+                    style={{
+                      background: 'var(--win-face-dark)',
+                      border: '1px solid var(--win-darkest)',
+                      boxShadow: 'inset 1px 1px 0 var(--win-darkest), inset -1px -1px 0 var(--win-hilite)',
+                    }}
                   >
-                    <X size={14} />
-                    <span>Exit to Nursery</span>
-                  </button>
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '11px', color: '#5a2d3a' }}>HEIGHT</div>
+                      <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '16px', fontWeight: 700, color: 'var(--text-dark)' }}>{hudHeight}m</div>
+                    </div>
+                    <div className="w-px h-6 bg-[#b38f86]" />
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '11px', color: '#5a2d3a' }}>SCORE</div>
+                      <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '16px', fontWeight: 700, color: 'var(--text-dark)' }}>{hudScore.toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  {isNewBest && (
+                    <div className="mb-2.5 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold text-[#5a2d3a] bg-[#ffd88a] border border-[#3a1d26]">
+                      <Sparkles size={11} /> NEW PERSONAL BEST!
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2 w-full mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        initAudio();
+                        resetGame();
+                        playNote(2);
+                      }}
+                      className={`${styles.shBtn} ${styles.shBtnPrimary} w-full`}
+                    >
+                      <span>🌸</span>
+                      <span>Hop Again</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className={`${styles.shBtn} w-full`}
+                    >
+                      <X size={12} />
+                      <span>Exit to Nursery</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Cabinet Footer */}
-        <div className="pt-1.5 px-1 flex items-center justify-between text-xs text-[#DEC3A7] flex-shrink-0">
-          <span className="text-[10px] sm:text-[11px] text-[#DEC3A7]/85 font-medium flex items-center gap-1">
+        {/* Retro Bottom Status Bar */}
+        <div className={styles.shStatusbar}>
+          <span className={styles.shHint}>
             <span>👆</span> Drag left/right to steer Pip
           </span>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -899,10 +840,10 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
                 setSoundOn((s) => !s);
               }}
               title={soundOn ? 'Turn sound off' : 'Turn sound on'}
-              className="px-2.5 py-1 rounded-lg bg-[#341C29] hover:bg-[#462637] border border-[#DEC3A7]/30 text-white text-[10px] sm:text-[11px] flex items-center gap-1 transition cursor-pointer"
+              className={styles.shBtn}
             >
-              {soundOn ? <Volume2 size={11} className="text-[#F3C66F]" /> : <VolumeX size={11} className="text-[#F6A9BE]" />}
-              <span>{soundOn ? 'ON' : 'OFF'}</span>
+              {soundOn ? <Volume2 size={12} className="text-[#ffd88a]" /> : <VolumeX size={12} className="text-[#f4a6bd]" />}
+              <span>{soundOn ? 'SOUND: ON' : 'SOUND: OFF'}</span>
             </button>
 
             <button
@@ -913,9 +854,9 @@ export function SakuraHopModal({ isOpen, onClose }: SakuraHopModalProps) {
                 playNote(1);
               }}
               title="Restart Hop"
-              className="px-2.5 py-1 rounded-lg bg-[#341C29] hover:bg-[#462637] border border-[#DEC3A7]/30 text-white text-[10px] sm:text-[11px] flex items-center gap-1 transition cursor-pointer"
+              className={`${styles.shBtn} ${styles.shBtnPrimary}`}
             >
-              <RotateCcw size={11} className="text-[#F3C66F]" />
+              <RotateCcw size={12} />
               <span>Retry</span>
             </button>
           </div>
